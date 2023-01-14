@@ -27,10 +27,10 @@ class _LoginPageState extends State<LoginPage> {
   var webviewwidth;
 
   void logOut() async {
-    await controller.runJavaScript("__doPostBack('btnLogout','');");
+    await controller.runJavaScript(
+        "__doPostBack('btnRefresh',''); __doPostBack('btnLogout','');");
   }
 
-  bool isLoggedIn = false;
   void login() async {
     await UserSecureStorage.setUsername(usernameController.text);
     await UserSecureStorage.setPassword(passwordController.text);
@@ -105,6 +105,7 @@ class _LoginPageState extends State<LoginPage> {
       usernameController.text = name;
       passwordController.text = password;
     });
+    login();
   }
 
   void adjustForm() async {
@@ -119,7 +120,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    login();
+    // login();
     if (usernameController.text == '') {
       FocusScope.of(context).requestFocus(usernameFocusNode);
     } else if (passwordController.text == '') {
