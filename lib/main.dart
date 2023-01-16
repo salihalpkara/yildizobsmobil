@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MaterialApp(
@@ -66,13 +67,16 @@ class _LoginPageState extends State<LoginPage> {
           onProgress: (int progress) {
             // Update loading bar.
           },
-          onPageStarted: (String url) {},
+          onPageStarted: (String url) {
+
+          },
           onPageFinished: (String url) {
             if (url != link) {
               goToHomePage(url);
             } else {
               adjustForm();
               secCodeController.clear();
+
             }
           },
           onWebResourceError: (WebResourceError error) {},
@@ -85,7 +89,11 @@ class _LoginPageState extends State<LoginPage> {
         ),
       )
       ..loadRequest(Uri.parse(link));
+
+
     controller.reload();
+
+
 
     // #enddocregion webview_controller
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -165,6 +173,7 @@ class _LoginPageState extends State<LoginPage> {
                   setState(() {
                     UserSecureStorage.setPassword(password);
                   });
+                  FocusScope.of(context).requestFocus(secFocusNode);
                 },
                 obscureText: true,
                 decoration: InputDecoration(
