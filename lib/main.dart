@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-void main() => runApp(const MaterialApp(
-      home: LoginPage(),
-      debugShowCheckedModeBanner: false,
-    ));
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const MaterialApp(
+    home: LoginPage(),
+    debugShowCheckedModeBanner: false,
+  ));
+}
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -20,11 +22,11 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController secCodeController = TextEditingController();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final secFocusNode = FocusNode();
-  final usernameFocusNode = FocusNode();
-  final passwordFocusNode = FocusNode();
-  var secCode;
-  var webviewwidth;
+  late FocusNode secFocusNode;
+  late FocusNode usernameFocusNode;
+  late FocusNode passwordFocusNode;
+  late String secCode;
+  late int webviewwidth;
 
   void logOut() async {
     await controller.runJavaScript(
@@ -42,26 +44,14 @@ class _LoginPageState extends State<LoginPage> {
         "document.getElementById('txtSecCode').value = '${secCodeController.text}';");
     await controller
         .runJavaScript("document.getElementById('btnLogin').click();");
-    Future.delayed(const Duration(seconds: 2), () async {
-      final String? finalurl = await controller.currentUrl();
-      String compurl = finalurl.toString();
-      if (compurl != "https://obs.yildiz.edu.tr/oibs/ogrenci/login.aspx") {
-        goToHomePage(compurl);
-      }
-    });
-
-    // while (controller.currentUrl ==
-    //     "https://obs.yildiz.edu.tr/oibs/ogrenci/login.aspx") {
-    //   await Future.delayed(Duration(milliseconds: 20000));
-    // }
-    // final String? finalurl = await controller.currentUrl();
-    // String compurl = finalurl.toString();
-    // goToHomePage(compurl);
   }
 
   @override
   void initState() {
     super.initState();
+    secFocusNode = FocusNode();
+    usernameFocusNode = FocusNode();
+    passwordFocusNode = FocusNode();
 
     init();
     secCodeController.text = '';
@@ -78,7 +68,12 @@ class _LoginPageState extends State<LoginPage> {
           },
           onPageStarted: (String url) {},
           onPageFinished: (String url) {
-            adjustForm();
+            if (url != link) {
+              goToHomePage(url);
+            } else {
+              adjustForm();
+              secCodeController.clear();
+            }
           },
           onWebResourceError: (WebResourceError error) {},
           onNavigationRequest: (NavigationRequest request) {
@@ -93,8 +88,9 @@ class _LoginPageState extends State<LoginPage> {
     controller.reload();
 
     // #enddocregion webview_controller
-
-    WidgetsBinding.instance.addPostFrameCallback((_) => adjustForm());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      adjustForm();
+    });
   }
 
   Future init() async {
@@ -105,12 +101,23 @@ class _LoginPageState extends State<LoginPage> {
       usernameController.text = name;
       passwordController.text = password;
     });
+    setFocus();
     login();
+  }
+
+  void setFocus() {
+    if (usernameController.text == '') {
+      FocusScope.of(context).requestFocus(usernameFocusNode);
+    } else if (passwordController.text == '') {
+      FocusScope.of(context).requestFocus(passwordFocusNode);
+    } else {
+      FocusScope.of(context).requestFocus(secFocusNode);
+    }
   }
 
   void adjustForm() async {
     await controller.runJavaScript(
-        "var imgCaptchaImg = document.getElementById('imgCaptchaImg'); document.body.appendChild(imgCaptchaImg); imgCaptchaImg.style.width = 'auto';imgCaptchaImg.style.height = 'auto';document.getElementById('form1').style.display = 'none';document.getElementById('imgCaptchaImg').onclick = '';");
+        "setInterval(function() {window.location.reload();}, 300000); var imgCaptchaImg = document.getElementById('imgCaptchaImg'); document.body.appendChild(imgCaptchaImg); imgCaptchaImg.style.width = 'auto';imgCaptchaImg.style.height = 'auto';document.getElementById('form1').style.display = 'none';document.getElementById('imgCaptchaImg').onclick = '';");
   }
 
   void goToHomePage(String compurl) {
@@ -120,16 +127,10 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    // login();
-    if (usernameController.text == '') {
-      FocusScope.of(context).requestFocus(usernameFocusNode);
-    } else if (passwordController.text == '') {
-      FocusScope.of(context).requestFocus(passwordFocusNode);
-    } else {
-      FocusScope.of(context).requestFocus(secFocusNode);
-    }
     return Scaffold(
-      body: Form(
+      body: SizedBox(
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -137,7 +138,6 @@ class _LoginPageState extends State<LoginPage> {
               height: MediaQuery.of(context).size.height / 5,
               child: Image.asset("assets/images/ytu_logo.png"),
             ),
-            Text("Hoşgeldin ${usernameController.text}"),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
               child: TextField(
@@ -194,12 +194,12 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
             ElevatedButton(
-              style:
-                  ElevatedButton.styleFrom(backgroundColor: Color(0xffa19065)),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xffa19065)),
               onPressed: () {
                 login();
               },
-              child: Text("Giriş Yap"),
+              child: const Text("Giriş Yap"),
             )
           ],
         ),
@@ -212,35 +212,41 @@ class _LoginPageState extends State<LoginPage> {
             logOut();
           });
         },
-        child: Icon(Icons.loop_outlined),
+        child: const Icon(Icons.loop_outlined),
       ),
     );
   }
 }
 
 class UserSecureStorage {
-  static final _storage = FlutterSecureStorage();
+  static const _storage = FlutterSecureStorage();
   static const _keyUsername = 'username';
   static const _keyPassword = 'password';
+  static const _keyStudentName = 'studentName';
   static Future setPassword(String password) async =>
       await _storage.write(key: _keyPassword, value: password);
+  static Future setStudentName(String studentName) async =>
+      await _storage.write(key: _keyStudentName, value: studentName);
   static Future setUsername(String username) async =>
       await _storage.write(key: _keyUsername, value: username);
   static Future<String?> getPassword() async =>
       await _storage.read(key: _keyPassword);
   static Future<String?> getUsername() async =>
       await _storage.read(key: _keyUsername);
+  static Future<String?> getStudentName() async =>
+      await _storage.read(key: _keyStudentName);
 }
 
 class HomePage extends StatefulWidget {
-  String? url;
-  HomePage({Key? key, required this.url}) : super(key: key);
+  final String? url;
+  const HomePage({Key? key, required this.url}) : super(key: key);
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
+  late final WebViewController controller;
   Future<void> logOut() async {
     await controller.runJavaScript("__doPostBack('btnLogout','');");
   }
@@ -250,12 +256,12 @@ class _HomePageState extends State<HomePage> {
         context, MaterialPageRoute(builder: (context) => const LoginPage()));
   }
 
-  late final WebViewController controller;
-
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    const link = "https://obs.yildiz.edu.tr/oibs/ogrenci/login.aspx";
+
     controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0x00000000))
@@ -265,7 +271,12 @@ class _HomePageState extends State<HomePage> {
             // Update loading bar.
           },
           onPageStarted: (String url) {},
-          onPageFinished: (String url) {},
+          onPageFinished: (String url) {
+            if (url == link) {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const LoginPage()));
+            }
+          },
           onWebResourceError: (WebResourceError error) {},
           onNavigationRequest: (NavigationRequest request) {
             if (request.url.startsWith('https://www.youtube.com/')) {
@@ -288,10 +299,6 @@ class _HomePageState extends State<HomePage> {
           return false;
         } else {
           logOut();
-          Future.delayed(Duration(seconds: 2), () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const LoginPage()));
-          });
           return false;
         }
       },
@@ -303,12 +310,8 @@ class _HomePageState extends State<HomePage> {
           floatingActionButton: FloatingActionButton(
             onPressed: () {
               logOut();
-              Future.delayed(Duration(seconds: 2), () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const LoginPage()));
-              });
             },
-            child: Icon(Icons.logout_sharp),
+            child: const Icon(Icons.logout_sharp),
           ),
         ),
       ),
