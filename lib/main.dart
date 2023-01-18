@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 
 void main() {
@@ -10,6 +10,9 @@ void main() {
     debugShowCheckedModeBanner: false,
   ));
 }
+var link = "https://obs.yildiz.edu.tr/oibs/ogrenci/login.aspx";
+
+
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -19,7 +22,9 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  late final WebViewController controller;
+  late InAppWebViewController webViewController;
+  final GlobalKey webViewKey = GlobalKey();
+
   final TextEditingController secCodeController = TextEditingController();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -30,21 +35,20 @@ class _LoginPageState extends State<LoginPage> {
   late int webviewwidth;
 
   void logOut() async {
-    await controller.runJavaScript(
-        "__doPostBack('btnRefresh',''); __doPostBack('btnLogout','');");
+    await webViewController.evaluateJavascript(source:
+    "__doPostBack('btnRefresh',''); __doPostBack('btnLogout','');");
   }
 
   void login() async {
     await UserSecureStorage.setUsername(usernameController.text);
     await UserSecureStorage.setPassword(passwordController.text);
-    await controller.runJavaScript(
-        "document.getElementById('txtParamT01').value = '${usernameController.text}';");
-    await controller.runJavaScript(
-        "document.getElementById('txtParamT02').value = '${passwordController.text}';");
-    await controller.runJavaScript(
-        "document.getElementById('txtSecCode').value = '${secCodeController.text}';");
-    await controller
-        .runJavaScript("document.getElementById('btnLogin').click();");
+    await webViewController.evaluateJavascript(source:
+    "document.getElementById('txtParamT01').value = '${usernameController.text}';");
+    await webViewController.evaluateJavascript(source:
+    "document.getElementById('txtParamT02').value = '${passwordController.text}';");
+    await webViewController.evaluateJavascript(source:
+    "document.getElementById('txtSecCode').value = '${secCodeController.text}';");
+    await webViewController.evaluateJavascript(source: "document.getElementById('btnLogin').click();");
   }
 
   @override
@@ -56,46 +60,7 @@ class _LoginPageState extends State<LoginPage> {
 
     init();
     secCodeController.text = '';
-    var link = "https://obs.yildiz.edu.tr/oibs/ogrenci/login.aspx";
 
-    // #docregion webview_controller
-    controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0x00000000))
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onProgress: (int progress) {
-            // Update loading bar.
-          },
-          onPageStarted: (String url) {
-
-          },
-          onPageFinished: (String url) {
-            if (url != link) {
-              goToHomePage(url);
-            } else {
-              adjustForm();
-              secCodeController.clear();
-
-            }
-          },
-          onWebResourceError: (WebResourceError error) {},
-          onNavigationRequest: (NavigationRequest request) {
-            if (request.url.startsWith('https://www.youtube.com/')) {
-              return NavigationDecision.prevent;
-            }
-            return NavigationDecision.navigate;
-          },
-        ),
-      )
-      ..loadRequest(Uri.parse(link));
-
-
-    controller.reload();
-
-
-
-    // #enddocregion webview_controller
     WidgetsBinding.instance.addPostFrameCallback((_) {
       adjustForm();
     });
@@ -124,13 +89,13 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void adjustForm() async {
-    await controller.runJavaScript(
-        "setInterval(function() {window.location.reload();}, 300000); var imgCaptchaImg = document.getElementById('imgCaptchaImg'); document.body.appendChild(imgCaptchaImg); imgCaptchaImg.style.width = 'auto';imgCaptchaImg.style.height = 'auto';document.getElementById('form1').style.display = 'none';document.getElementById('imgCaptchaImg').onclick = '';");
+    await webViewController.evaluateJavascript(source:
+    "setInterval(function() {window.location.reload();}, 300000); var imgCaptchaImg = document.getElementById('imgCaptchaImg'); document.body.appendChild(imgCaptchaImg); imgCaptchaImg.style.width = 'auto';imgCaptchaImg.style.height = 'auto';document.getElementById('form1').style.display = 'none';document.getElementById('imgCaptchaImg').onclick = '';");
   }
 
   void goToHomePage(String compurl) {
     Navigator.pushReplacement(context,
-        MaterialPageRoute(builder: (context) => HomePage(url: compurl)));
+        MaterialPageRoute(builder: (context) => HomePage(redirecturl: compurl)));
   }
 
   @override
@@ -197,7 +162,23 @@ class _LoginPageState extends State<LoginPage> {
                   icon: SizedBox(
                     width: 177,
                     height: 40,
-                    child: WebViewWidget(controller: controller),
+                    child: InAppWebView(
+                      key: webViewKey,
+                      initialUrlRequest: URLRequest(url: Uri.parse(link)),
+                      onWebViewCreated: (InAppWebViewController controller) {
+                        webViewController = controller;
+                        logOut();
+                      },
+                      onLoadStart: (InAppWebViewController controller, Uri? url) {
+                      },
+                      onLoadStop: (InAppWebViewController controller, Uri? url) {
+                        if (url.toString() != link) {
+                          goToHomePage(url.toString());
+                        } else {
+                          adjustForm();
+                          secCodeController.clear();}
+                      },
+                    ),
                   ),
                 ),
               ),
@@ -206,6 +187,7 @@ class _LoginPageState extends State<LoginPage> {
               style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xffa19065)),
               onPressed: () {
+
                 login();
               },
               child: const Text("Giriş Yap"),
@@ -247,17 +229,20 @@ class UserSecureStorage {
 }
 
 class HomePage extends StatefulWidget {
-  final String? url;
-  const HomePage({Key? key, required this.url}) : super(key: key);
+  final String? redirecturl;
+  const HomePage({Key? key, required this.redirecturl}) : super(key: key);
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  late final WebViewController controller;
-  Future<void> logOut() async {
-    await controller.runJavaScript("__doPostBack('btnLogout','');");
+  late InAppWebViewController webViewController;
+  final GlobalKey webViewKey = GlobalKey();
+
+  void logOut() async {
+    await webViewController.evaluateJavascript(source:
+    "__doPostBack('btnRefresh',''); __doPostBack('btnLogout','');");
   }
 
   void goToLoginPage() {
@@ -269,42 +254,15 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    const link = "https://obs.yildiz.edu.tr/oibs/ogrenci/login.aspx";
-
-    controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0x00000000))
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onProgress: (int progress) {
-            // Update loading bar.
-          },
-          onPageStarted: (String url) {},
-          onPageFinished: (String url) {
-            if (url == link) {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const LoginPage()));
-            }
-          },
-          onWebResourceError: (WebResourceError error) {},
-          onNavigationRequest: (NavigationRequest request) {
-            if (request.url.startsWith('https://www.youtube.com/')) {
-              return NavigationDecision.prevent;
-            }
-            return NavigationDecision.navigate;
-          },
-        ),
-      )
-      ..loadRequest(Uri.parse(widget.url.toString()));
-    // #enddocregion webview_controller
   }
 
   @override
   Widget build(BuildContext context) {
+
     return WillPopScope(
       onWillPop: () async {
-        if (await controller.canGoBack()) {
-          controller.goBack();
+        if (await webViewController.canGoBack()) {
+          webViewController.goBack();
           return false;
         } else {
           logOut();
@@ -313,8 +271,23 @@ class _HomePageState extends State<HomePage> {
       },
       child: SafeArea(
         child: Scaffold(
-          body: WebViewWidget(
-            controller: controller,
+          body: InAppWebView(
+            key: webViewKey,
+            initialUrlRequest: URLRequest(
+                url: Uri.parse(widget.redirecturl.toString())),
+            onWebViewCreated: (InAppWebViewController controller) {
+              webViewController = controller;
+            },
+            onLoadStart: (InAppWebViewController controller, Uri? url) {
+            },
+            onLoadStop: (InAppWebViewController controller, Uri? url) {
+              if (url.toString() == link) {
+                goToLoginPage();
+                // Navigator.push(context,
+                //     MaterialPageRoute(
+                //         builder: (context) => const LoginPage()));
+              }
+            },
           ),
           floatingActionButton: FloatingActionButton(
             onPressed: () {
