@@ -66,6 +66,8 @@ class ChangeThemeButtonWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     return Switch.adaptive(
+      activeThumbImage: const AssetImage("assets/images/moonicon.png"),
+        inactiveThumbImage: const AssetImage("assets/images/sunicon.png"),
         activeColor: Colors.grey.shade700,
         value: themeProvider.isDarkMode,
         onChanged: (value) async {
@@ -181,9 +183,12 @@ class _LoginPageState extends State<LoginPage> {
                 height: MediaQuery.of(context).size.height / 5,
                 child: Image.asset("assets/images/ytu_logo.png"),
               ),
-              const Text(
-                "YTÜ Öğrenci Bilgi Sistemi",
-                style: TextStyle(fontSize: 20),
+              const Padding(
+                padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                child: Text(
+                  "YTÜ Öğrenci Bilgi Sistemi",
+                  style: TextStyle(fontSize: 22),
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
@@ -286,7 +291,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xffa19065),),
+                    backgroundColor: const Color(0xffa19065), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                 onPressed: () {
                   login();
                 },
@@ -349,12 +354,6 @@ class _HomePageState extends State<HomePage> {
   void goToLoginPage() {
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (context) => const LoginPage()));
-  }
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
   }
 
   @override
