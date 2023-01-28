@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -30,7 +32,7 @@ class MyThemes {
     scaffoldBackgroundColor: Colors.grey.shade900,
     colorScheme: const ColorScheme.dark(
       primary: Color.fromARGB(255, 37, 150, 190),
-      secondary: Color.fromARGB(255, 190, 77, 37),
+      secondary: Color(0xffa19065),
     ),
   );
   static final lightTheme = ThemeData(
@@ -38,7 +40,7 @@ class MyThemes {
     scaffoldBackgroundColor: Colors.white,
     colorScheme: const ColorScheme.light(
       primary: Color.fromARGB(255, 37, 150, 190),
-      secondary: Color.fromARGB(255, 190, 77, 37),
+      secondary: Color(0xffa19065),
     ),
   );
 }
@@ -98,14 +100,14 @@ class _LoginPageState extends State<LoginPage> {
   late InAppWebViewController edevletcontroller;
   String edevletlink =
       "giris.turkiye.gov.tr/Giris/gir?oauthClientId=640cbd04-b79a-4457-8acf-323ac1d4075b&continue=https%3A%2F%2Fgiris.turkiye.gov.tr%2FOAuth2AuthorizationServer%2FAuthorizationController%3Fresponse_type%3Dcode%26client_id%3D640cbd04-b79a-4457-8acf-323ac1d4075b%26state%3DOgrenci%26scope%3DKimlik-Dogrula%253BAd-Soyad%26redirect_uri%3Dhttps%253A%252F%252Fobs.yildiz.edu.tr%252Frouter.aspx";
+  String obsLink = "https://obs.yildiz.edu.tr/oibs/ogrenci/login.aspx";
   late InAppWebViewController webViewController;
   final GlobalKey webViewKey = GlobalKey();
   final TextEditingController secCodeController = TextEditingController();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController TCKNController = TextEditingController();
-  final TextEditingController eDevletPasswordController =
-      TextEditingController();
+  final TextEditingController eDevletPasswordController =TextEditingController();
   late FocusNode secFocusNode;
   late FocusNode usernameFocusNode;
   late FocusNode passwordFocusNode;
@@ -114,7 +116,7 @@ class _LoginPageState extends State<LoginPage> {
   late int webviewwidth;
   bool _obscureText = true;
   bool _obscureTCKN = true;
-  bool _obscureEdevletPassword = true;
+  bool _infoOffstage = true;
   bool _offstage = true;
 
   void logOut() async {
@@ -360,22 +362,30 @@ class _LoginPageState extends State<LoginPage> {
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10))),
                             onPressed: () {
-                              openEdevletDialog();
+                              setState(() {
+                                _offstage = !_offstage;
+                              });
                             },
-                            child: Row(children: [
-                              Image.asset(
-                                "assets/images/edevletgiris.png",
-                                height: 36,
-                              ),
-                              const Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Text("e-Devlet ile Giriş Yap")),
-                              Container(
-                                  width: 0.5,
-                                  height: 30,
-                                  color: Colors.white.withOpacity(1)),
-                              const SizedBox(width: 10)
-                            ]),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    Image.asset(
+                                      "assets/images/edevletgiris.png",
+                                      height: 36,
+                                      width: 36,
+                                    ),
+                                    const Padding(
+                                        padding: EdgeInsets.all(8.0),
+                                        child: Text("e-Devlet ile Giriş Yap")),
+                                    Container(
+                                        width: 0.5,
+                                        height: 30,
+                                        color: Colors.white.withOpacity(1)),
+                                    const SizedBox(width: 10)
+                                  ]),
+                            ),
                           ),
                           Positioned(
                               right: -10,
@@ -383,147 +393,181 @@ class _LoginPageState extends State<LoginPage> {
                                 onPressed: () {
                                   showDialog(
                                     context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: const Text(
-                                        "e-Devlet Giriş Bilgilerini Düzenle",
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      content: SizedBox(
-                                        height: 195,
-                                        child: Column(
-                                          children: [
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.fromLTRB(
-                                                      0, 0, 0, 10),
-                                              child: TextField(
-                                                autofocus: true,
-                                                obscureText: _obscureTCKN,
-                                                controller: TCKNController,
-                                                onSubmitted: (TCKN) {
-                                                  setState(() {
-                                                    UserSecureStorage.setTCKN(TCKN);
-                                                    FocusScope.of(context).requestFocus( eDevletPasswordFocusNode);
-                                                  });
+                                    builder: (context) => StatefulBuilder(
+                                      builder: (context, setStatee) =>
+                                          AlertDialog(
+                                        title: const Text(
+                                          "e-Devlet Giriş Bilgilerini Düzenle",
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        content: SizedBox(
+                                          height: 195,
+                                          child: Column(
+                                            children: [
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.fromLTRB(
+                                                        0, 0, 0, 10),
+                                                child: TextField(
+                                                  autofocus: true,
+                                                  obscureText: _obscureTCKN,
+                                                  controller: TCKNController,
+                                                  onSubmitted: (TCKN) {
+                                                    setState(() {
+                                                      UserSecureStorage.setTCKN(
+                                                          TCKN);
+                                                      FocusScope.of(context)
+                                                          .requestFocus(
+                                                              eDevletPasswordFocusNode);
+                                                    });
+                                                  },
+                                                  textInputAction:
+                                                      TextInputAction.next,
+                                                  decoration: InputDecoration(
+                                                    focusColor:
+                                                        const Color.fromARGB(
+                                                            255, 28, 39, 86),
+                                                    suffixIcon: IconButton(
+                                                      icon: AnimatedCrossFade(
+                                                        firstChild: const Icon(
+                                                            Icons
+                                                                .visibility_off),
+                                                        secondChild: const Icon(
+                                                            Icons.visibility),
+                                                        crossFadeState:
+                                                            _obscureTCKN
+                                                                ? CrossFadeState
+                                                                    .showFirst
+                                                                : CrossFadeState
+                                                                    .showSecond,
+                                                        duration:
+                                                            const Duration(
+                                                                milliseconds:
+                                                                    250),
+                                                      ),
+                                                      color: Colors.grey,
+                                                      onPressed: () {
+                                                        setStatee(() {
+                                                          _obscureTCKN =
+                                                              !_obscureTCKN;
+                                                        });
+                                                      },
+                                                    ),
+                                                    border: OutlineInputBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(20)),
+                                                    labelText:
+                                                        "TC Kimlik Numarası",
+                                                  ),
+                                                ),
+                                              ),
+                                              TextField(
+                                                controller:
+                                                    eDevletPasswordController,
+                                                onSubmitted: (password) {
+                                                  UserSecureStorage
+                                                      .setEdevletPassword(
+                                                          password);
                                                 },
-                                                textInputAction:
-                                                    TextInputAction.next,
-
+                                                focusNode:
+                                                    eDevletPasswordFocusNode,
+                                                obscureText: true,
                                                 decoration: InputDecoration(
                                                   focusColor:
                                                       const Color.fromARGB(
                                                           255, 28, 39, 86),
-                                                  suffixIcon: IconButton(
-                                                    icon: AnimatedCrossFade(
-                                                      firstChild: const Icon(
-                                                          Icons.visibility_off),
-                                                      secondChild: const Icon(
-                                                          Icons.visibility),
-                                                      crossFadeState:
-                                                          _obscureTCKN
-                                                              ? CrossFadeState
-                                                                  .showFirst
-                                                              : CrossFadeState
-                                                                  .showSecond,
-                                                      duration: const Duration(
-                                                          milliseconds: 250),
-                                                    ),
-                                                    color: Colors.grey,
-                                                    onPressed: () {
-                                                      setState(() {
-                                                        _obscureTCKN =
-                                                            !_obscureTCKN;
-                                                      });
-                                                    },
-                                                  ),
                                                   border: OutlineInputBorder(
                                                       borderRadius:
                                                           BorderRadius.circular(
                                                               20)),
-                                                  labelText:
-                                                      "TC Kimlik Numarası",
+                                                  labelText: "e-Devlet Şifresi",
                                                 ),
                                               ),
-                                            ),
-                                            TextField(
-                                              controller:
-                                                  eDevletPasswordController,
-                                              onSubmitted: (password) {
-                                                UserSecureStorage
-                                                    .setEdevletPassword(
-                                                        password);
-                                              },
-                                              focusNode:
-                                                  eDevletPasswordFocusNode,
-                                              obscureText:
-                                                  _obscureEdevletPassword,
-                                              decoration: InputDecoration(
-                                                focusColor:
-                                                    const Color.fromARGB(
-                                                        255, 28, 39, 86),
-                                                suffixIcon: IconButton(
-                                                  icon: AnimatedCrossFade(
-                                                    firstChild: const Icon(
-                                                        Icons.visibility_off),
-                                                    secondChild: const Icon(
-                                                        Icons.visibility),
-                                                    crossFadeState:
-                                                        _obscureEdevletPassword
-                                                            ? CrossFadeState
-                                                                .showFirst
-                                                            : CrossFadeState
-                                                                .showSecond,
-                                                    duration: const Duration(
-                                                        milliseconds: 250),
+                                              const Padding(
+                                                padding:
+                                                    EdgeInsets.only(top: 20),
+                                                child: Text(
+                                                  "e-Devlet ile girişlerinizde TCKN ve e-Devlet şifrenizin otomatik doldurulması için bu bölümü doldurabilirsiniz.",
+                                                  style:
+                                                      TextStyle(fontSize: 14),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        actions: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceAround,
+                                            children: [
+                                              TextButton(
+                                                onPressed: () async {
+                                                  UserSecureStorage.setTCKN('');
+                                                  UserSecureStorage
+                                                      .setEdevletPassword('');
+                                                  setState(() {
+                                                    TCKNController.text = '';
+                                                    eDevletPasswordController
+                                                        .text = '';
+                                                  });
+                                                  Navigator.of(context).pop();
+                                                  await edevletcontroller
+                                                      .evaluateJavascript(
+                                                          source:
+                                                              "document.getElementById('tridField').value = ''; document.getElementById('egpField').value = '';");
+                                                },
+                                                child: const Text(
+                                                  "Bilgileri Sil",
+                                                  style: TextStyle(
+                                                      color: Colors.red,
+                                                      decoration: TextDecoration
+                                                          .underline),
+                                                ),
+                                              ),
+                                              Row(
+                                                children: [
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                    },
+                                                    child: const Text(
+                                                      "İptal",
+                                                      style: TextStyle(
+                                                          color: Colors.red),
+                                                    ),
                                                   ),
-                                                  color: Colors.grey,
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      _obscureEdevletPassword =
-                                                          !_obscureEdevletPassword;
-                                                    });
-                                                  },
-                                                ),
-                                                border: OutlineInputBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            20)),
-                                                labelText: "e-Devlet Şifresi",
+                                                  TextButton(
+                                                    onPressed: () async {
+                                                      UserSecureStorage.setTCKN(
+                                                          TCKNController.text);
+                                                      UserSecureStorage
+                                                          .setEdevletPassword(
+                                                              eDevletPasswordController
+                                                                  .text);
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                      await edevletcontroller
+                                                          .evaluateJavascript(
+                                                              source:
+                                                                  "document.getElementById('tridField').value = '${TCKNController.text}'; document.getElementById('egpField').value = '${eDevletPasswordController.text}';");
+                                                    },
+                                                    child: const Text("Kaydet"),
+                                                  ),
+                                                ],
                                               ),
-                                            ),
-                                            const Padding(
-                                              padding: EdgeInsets.only(top: 20),
-                                              child: Text(
-                                                "e-Devlet ile girişlerinizde TCKN ve e-Devlet şifrenizin otomatik doldurulması için bu bölümü doldurabilirsiniz.",
-                                                style: TextStyle(fontSize: 14),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                                            ],
+                                          ),
+                                        ],
                                       ),
-                                      actions: [
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                          children: [
-                                            TextButton(onPressed: () async {UserSecureStorage.setTCKN(''); UserSecureStorage.setEdevletPassword('');setState(() {TCKNController.text = ''; eDevletPasswordController.text = '';});Navigator.of(context).pop(); await edevletcontroller.evaluateJavascript(source: "document.getElementById('tridField').value = ''; document.getElementById('egpField').value = '';");}, child: const Text("Bilgileri Sil", style: TextStyle(color: Colors.red, decoration: TextDecoration.underline),),),
-                                            Row(
-                                              children: [
-                                                TextButton(onPressed: (){Navigator.of(context).pop();}, child: const Text("İptal", style: TextStyle(color: Colors.red),),),
-                                                TextButton(onPressed: () async {UserSecureStorage.setTCKN(TCKNController.text); UserSecureStorage.setEdevletPassword(eDevletPasswordController.text); Navigator.of(context).pop(); await edevletcontroller.evaluateJavascript(source: "document.getElementById('tridField').value = '${TCKNController.text}'; document.getElementById('egpField').value = '${eDevletPasswordController.text}';");}, child: const Text("Kaydet"),),
-                                              ],
-
-                                            ),
-                                          ],
-                                        ),
-
-
-                                      ],
                                     ),
                                   );
                                 },
                                 icon: const Icon(
                                   Icons.settings,
                                   size: 18,
+                                  color: Colors.white,
                                 ),
                               ))
                         ]),
@@ -547,6 +591,43 @@ class _LoginPageState extends State<LoginPage> {
                 right: 10,
                 child: ChangeThemeButtonWidget(),
               ),
+              Positioned(
+                bottom: 10,
+                left: 10,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  verticalDirection: VerticalDirection.up,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        setState(() {
+                          _infoOffstage = !_infoOffstage;
+                        });
+                        Future.delayed(const Duration(seconds: 5), () {
+                          setState(() {
+                            _infoOffstage = true;
+                          });
+                        });
+                      },
+                      icon: const Icon(Icons.info_outline_rounded),
+                    ),
+                    AnimatedOpacity(
+                        opacity: _infoOffstage ? 0 : 1,
+                        duration: const Duration(milliseconds: 200),
+                        child: Container(
+                            width: MediaQuery.of(context).size.width * 3/4,
+                            decoration: BoxDecoration(
+                                color: Colors.green.withOpacity(0.6),
+                                borderRadius: BorderRadius.circular(10)),
+                            padding: const EdgeInsets.all(8.0),
+                            child: const Text(
+                              "Bu uygulamada kullanılan ve kaydedilen hiçbir veri üçüncü bir taraf ile paylaşılmamakta olup hepsi cihazınızda şifrelenmiş bir şekilde saklanmaktadır.",
+                              softWrap: true,
+                              style: TextStyle(fontSize: 10),
+                            ))),
+                  ],
+                ),
+              ),
               AnimatedOpacity(
                 opacity: _offstage ? 0 : 1,
                 duration: const Duration(milliseconds: 300),
@@ -565,32 +646,21 @@ class _LoginPageState extends State<LoginPage> {
                           height: MediaQuery.of(context).size.width,
                           child: InAppWebView(
                             initialUrlRequest: URLRequest(url: Uri.parse(link)),
-                            onWebViewCreated:
-                                (InAppWebViewController controller) {
-                              edevletcontroller = controller;
+                            onWebViewCreated:(InAppWebViewController controller) {edevletcontroller = controller;},
+                            onLoadStart: (InAppWebViewController controller,Uri? url) {
                             },
-                            onLoadStart: (InAppWebViewController controller,
-                                Uri? url) {},
-                            onLoadStop: (InAppWebViewController controller,
-                                Uri? url) async {
-                              controller.evaluateJavascript(
-                                  source:
-                                      "__doPostBack('btnEdevletLogin','');");
-                              Future.delayed(const Duration(seconds: 1),
-                                  () async {
-                                await controller.evaluateJavascript(
-                                    source:
-                                        "document.getElementById('smartbanner').style.display = 'none';");
+                            onLoadStop: (InAppWebViewController controller,Uri? url) async {
+                              controller.evaluateJavascript(source:"__doPostBack('btnEdevletLogin','');");
+                              Future.delayed(const Duration(seconds: 1),() async {
+                                await controller.evaluateJavascript(source:"document.getElementById('smartbanner').style.display = 'none'; document.querySelector('#loginForm > div.formSubmitRow > input.backButton').style.display = 'none';");
                                 await controller.scrollTo(x: 0, y: 840);
-                                String tckn = await UserSecureStorage.getTCKN() ?? '';
-                                String eDevletPassword = await UserSecureStorage.getEdevletPassword() ?? '';
-                                if(tckn.isNotEmpty && eDevletPassword.isNotEmpty){
-                                  await controller.evaluateJavascript(source: "document.getElementById('tridField').value = '$tckn'; document.getElementById('egpField').value = '$eDevletPassword';");
-                                }
+                                String tckn =await UserSecureStorage.getTCKN() ?? '';
+                                String eDevletPassword = await UserSecureStorage.getEdevletPassword() ??'';
+                                if (tckn.isNotEmpty && eDevletPassword.isNotEmpty) {
+                                  await controller.evaluateJavascript(source:"document.getElementById('tridField').value = '$tckn'; document.getElementById('egpField').value = '$eDevletPassword';");}
                               });
                               Uri? location = await controller.getUrl();
-                              if (await controller.canGoBack() &&
-                                  location.toString() != edevletlink) {
+                              if (await controller.canGoBack() && location.toString() != edevletlink) {
                                 goToHomePage(location.toString());
                               }
                             },

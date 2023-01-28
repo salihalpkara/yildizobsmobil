@@ -4,6 +4,7 @@ import 'main.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:html/dom.dart' as dom;
 import 'package:html/parser.dart';
+import 'dart:math' as math;
 
 class HomePage extends StatefulWidget {
   final String? redirecturl;
@@ -16,10 +17,10 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late InAppWebViewController webViewController;
   final GlobalKey webViewKey = GlobalKey();
-  final _scrollController = ScrollController();
   String framehtml = '';
   String pagehtml = '';
   List navItems = [];
+  int bottomNavIndex = 2;
 
   // List<String> branches = [];
   // List<String> subjectCodes = [];
@@ -47,17 +48,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   void createItems() async {
+    LineSplitter ls = const LineSplitter();
     dom.Document html = dom.Document.html(pagehtml);
     final navItems = html
         .querySelectorAll('.nav-item.has-treeview')
-        .map((element) => element.innerHtml)
+        .map((element) => element.text)
         .toList();
-
-    List topItems = [];
-    List subItems = [];
-
-
-
     setState(() {
       this.navItems = navItems;
     });
@@ -71,112 +67,115 @@ class _HomePageState extends State<HomePage> {
           webViewController.goBack();
           return false;
         } else {
-          logOut();
+          showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                    actions: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                        TextButton(
+                            onPressed: () {
+                              logOut();
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text("Çıkış Yap", style: TextStyle(color: Colors.red, decoration: TextDecoration.underline),)),
+                        TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text("Sitede Kal")),
+                      ]),
+                    ],
+                    title: const Text("Çıkış yapmak istiyor musunuz?"),
+                  ));
           return false;
         }
       },
       child: Scaffold(
-        drawer: Drawer(),
-        appBar: AppBar(
-          actions: [
-            SizedBox(
-              width: 70,
-              child: IconButton(
-                  onPressed: () {},
-                  icon: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.output),
-                        Text(
-                          "Sitede aç",
-                          style: TextStyle(fontSize: 8),
-                        )
-                      ],
-                    ),
-                  )),
-            ),
-            const ChangeThemeButtonWidget()
-          ],
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Text("Salih Alp KARA"),
-              Text(
-                "Matematik Mühendisliği",
-                style: TextStyle(fontSize: 12),
-              )
-            ],
-          ),
-        ),
-        body: Stack(children: [
-          Center(child: SingleChildScrollView(child: Text(navItems.length>1? navItems[1]: "", softWrap: false,),),),
-          Offstage(
-            offstage: true,
-            child: SafeArea(
-              child: Stack(children: [
-
-                InAppWebView(
-                  onConsoleMessage: (controller, consoleMessage) {
-                    print('Console Message: ${consoleMessage.message}');
-                    framehtml = consoleMessage.message;
-                    setState(() {});
-                  },
-                  key: webViewKey,
-                  initialUrlRequest:
-                      URLRequest(url: Uri.parse(widget.redirecturl.toString())),
-                  onWebViewCreated: (InAppWebViewController controller) {
-                    webViewController = controller;
-                  },
-                  onLoadStart: (InAppWebViewController controller, Uri? url) {},
-                  onLoadStop:
-                      (InAppWebViewController controller, Uri? url) async {
-                    if (url.toString() == link) {
-                      goToLoginPage();
-                    } else {
-                      framehtml = await controller.evaluateJavascript(
-                          source:
-                              "var frameObj =document.getElementById('IFRAME1');var frameContent = frameObj.contentWindow.document.body; frameContent.innerHTML.toString();");
-                      pagehtml = await controller.evaluateJavascript(
-                          source: "document.body.innerHTML;");
-                      createItems();
-                      setState(() {});
-                      print(pagehtml);
-                    }
-                  },
-                )
-              ]),
-            ),
-          ),
-
-          // ListView.builder(
-          //     itemBuilder: (context, index) {
-          //       LineSplitter ls = const LineSplitter();
-          //       List<String> navItemLines = ls.convert(navItems[index])
-          //         ..removeWhere(
-          //             (element) => !element.contains(RegExp(r'[a-zA-Z]')));
-          //
-          //       return GridView.count(
-          //         crossAxisCount: 2,
-          //         children: [
-          //           Container(
-          //             width: MediaQuery.of(context).size.width / 2 - 20,
-          //             height: 100,
-          //             decoration: BoxDecoration(
-          //                 color: Colors.grey[200],
-          //                 borderRadius: BorderRadius.all(Radius.circular(10))),
-          //             child: Center(child: Text(navItemLines[0])),
-          //           )
-          //         ],
-          //       );
-          //     },
-          //     itemCount: navItems.length),
-        ]),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            goToLoginPage();
+        bottomNavigationBar: BottomNavigationBar(
+          onTap: (index) {
+            setState(() {
+              bottomNavIndex = index;
+            });
+            switch (index) {
+              case 0:
+                logOut();
+                break;
+              case 1:
+                webViewController.evaluateJavascript(
+                    source:
+                        "menu_close(this,'start.aspx?gkm=00233219833291388643775636606311143523032194333453444836720385043439638936355703756034388388243330337427341963524035280');");
+                break;
+              case 2:
+                webViewController.evaluateJavascript(
+                    source: "__doPostBack('','');");
+                break;
+              case 3:
+                webViewController.evaluateJavascript(
+                    source:
+                        "menu_close(this,'start.aspx?gkm=00233219833291388643775636606311143523032194333453444836720385043439638936355703756034388388243330337427341963524035275');");
+                break;
+              case 4:
+                webViewController.evaluateJavascript(
+                    source:
+                        "menu_close(this,'start.aspx?gkm=00233219833291388643775636606311143523032194333453444836720385043439638936355703756034388388243330337427341963524535260');");
+                break;
+            }
           },
-          child: const Icon(Icons.exit_to_app),
+          type: BottomNavigationBarType.fixed,
+          showUnselectedLabels: true,
+          selectedLabelStyle: const TextStyle(fontSize: 11),
+          unselectedLabelStyle: const TextStyle(fontSize: 11),
+          currentIndex: bottomNavIndex,
+          items: [
+            BottomNavigationBarItem(
+                icon: Transform(
+                    alignment: Alignment.center,
+                    transform: Matrix4.rotationY(math.pi),
+                    child: const Icon(Icons.logout, color: Colors.red,)),
+                label: "Çıkış"),
+            const BottomNavigationBarItem(
+                icon: Icon(Icons.calendar_month), label: "Ders Programı"),
+            const BottomNavigationBarItem(
+                icon: Icon(Icons.home_sharp), label: "Ana Sayfa"),
+            const BottomNavigationBarItem(
+                icon: Icon(Icons.note_alt_outlined), label: "Not Listesi"),
+            const BottomNavigationBarItem(
+                icon: Icon(Icons.mail), label: "Gelen Mesajlar"),
+          ],
+        ),
+        body: SafeArea(
+          child: InAppWebView(
+            onConsoleMessage: (controller, consoleMessage) {
+              print('Console Message: ${consoleMessage.message}');
+              framehtml = consoleMessage.message;
+              setState(() {});
+            },
+            key: webViewKey,
+            initialUrlRequest:
+                URLRequest(url: Uri.parse(widget.redirecturl.toString())),
+            onWebViewCreated: (InAppWebViewController controller) {
+              webViewController = controller;
+            },
+            onLoadStart: (InAppWebViewController controller, Uri? url) {},
+            onLoadStop:
+                (InAppWebViewController controller, Uri? url) async {
+              if (url.toString() == link) {
+                goToLoginPage();
+              }
+              // else {
+              //   framehtml = await controller.evaluateJavascript(
+              //       source:
+              //           "var frameObj =document.getElementById('IFRAME1');var frameContent = frameObj.contentWindow.document.body; frameContent.innerHTML.toString();");
+              //   pagehtml = await controller.evaluateJavascript(
+              //       source: "document.body.innerHTML;");
+              //   createItems();
+              //   setState(() {});
+              //   print(pagehtml);
+              // }
+            },
+          ),
         ),
       ),
     );
