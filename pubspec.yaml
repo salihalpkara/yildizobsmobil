@@ -40,7 +40,6 @@ dependencies:
   flutter_inappwebview: ^5.7.2+3
   google_fonts: ^3.0.1
   provider: ^6.0.5
-  html: ^0.15.1
 
 dev_dependencies:
   flutter_test:

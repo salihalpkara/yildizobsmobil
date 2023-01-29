@@ -87,20 +87,17 @@ class ChangeThemeButtonWidget extends StatelessWidget {
   }
 }
 
-var link = "https://obs.yildiz.edu.tr/oibs/ogrenci/login.aspx";
-
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
 
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
-
+String obsLink = "https://obs.yildiz.edu.tr/oibs/ogrenci/login.aspx";
 class _LoginPageState extends State<LoginPage> {
   late InAppWebViewController edevletcontroller;
   String edevletlink =
       "giris.turkiye.gov.tr/Giris/gir?oauthClientId=640cbd04-b79a-4457-8acf-323ac1d4075b&continue=https%3A%2F%2Fgiris.turkiye.gov.tr%2FOAuth2AuthorizationServer%2FAuthorizationController%3Fresponse_type%3Dcode%26client_id%3D640cbd04-b79a-4457-8acf-323ac1d4075b%26state%3DOgrenci%26scope%3DKimlik-Dogrula%253BAd-Soyad%26redirect_uri%3Dhttps%253A%252F%252Fobs.yildiz.edu.tr%252Frouter.aspx";
-  String obsLink = "https://obs.yildiz.edu.tr/oibs/ogrenci/login.aspx";
   late InAppWebViewController webViewController;
   final GlobalKey webViewKey = GlobalKey();
   final TextEditingController secCodeController = TextEditingController();
@@ -118,6 +115,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _obscureTCKN = true;
   bool _infoOffstage = true;
   bool _offstage = true;
+  bool secCodeOffstage = true;
 
   void logOut() async {
     await webViewController.evaluateJavascript(
@@ -306,45 +304,59 @@ class _LoginPageState extends State<LoginPage> {
                           icon: SizedBox(
                             width: 177,
                             height: 40,
-                            child: InAppWebView(
-                              key: webViewKey,
-                              initialUrlRequest:
-                                  URLRequest(url: Uri.parse(link)),
-                              onWebViewCreated:
-                                  (InAppWebViewController controller) {
-                                webViewController = controller;
-                              },
-                              onLoadStart: (InAppWebViewController controller,
-                                  Uri? url) {},
-                              onLoadStop: (InAppWebViewController controller,
-                                  Uri? url) async {
-                                if (url.toString() != link) {
-                                  goToHomePage(url.toString());
-                                } else {
-                                  String sonuc =
-                                      await controller.evaluateJavascript(
-                                              source:
-                                                  "document.getElementById('lblSonuclar').innerHTML;")
-                                          as String;
-                                  if (sonuc ==
-                                      'UYARI!! Aynı tarayıcıdan birden fazla giriş yapılamaz. Lütfen tüm açık tarayıcıları kapatın ve tarayıcınızı yeniden başlatın.') {
-                                    controller.evaluateJavascript(
-                                        source:
-                                            "__doPostBack('btnRefresh','');");
-                                  } else if (sonuc ==
-                                      'Güvenlik kodu hatalı girildi !') {
-                                    handleError("Güvenlik kodu hatalı girildi",
-                                        secFocusNode);
-                                  } else if (sonuc ==
-                                      "HATA:D21032301:Kullanıcı adı veya şifresi geçersiz.") {
-                                    handleError(
-                                        "Kullanıcı Adı veya Şifre hatalı",
-                                        passwordFocusNode);
-                                  }
-                                  adjustForm();
-                                  secCodeController.clear();
-                                }
-                              },
+                            child: Stack(
+                                alignment: AlignmentDirectional.center,
+                              children: [Offstage(
+                                offstage: secCodeOffstage,
+                                child: InAppWebView(
+                                  key: webViewKey,
+                                  initialUrlRequest:
+                                      URLRequest(url: Uri.parse(obsLink)),
+                                  onWebViewCreated:
+                                      (InAppWebViewController controller) {
+                                    webViewController = controller;
+                                  },
+                                  onLoadStart: (InAppWebViewController controller,
+                                      Uri? url) {
+                                    setState(() {
+                                      secCodeOffstage = true;
+                                    });
+                                  },
+                                  onLoadStop: (InAppWebViewController controller,
+                                      Uri? url) async {
+                                    if (url.toString() != obsLink) {
+                                      goToHomePage(url.toString());
+                                    } else {
+                                      String sonuc =
+                                          await controller.evaluateJavascript(
+                                                  source:
+                                                      "document.getElementById('lblSonuclar').innerHTML;")
+                                              as String;
+                                      if (sonuc ==
+                                          'UYARI!! Aynı tarayıcıdan birden fazla giriş yapılamaz. Lütfen tüm açık tarayıcıları kapatın ve tarayıcınızı yeniden başlatın.') {
+                                        controller.evaluateJavascript(
+                                            source:
+                                                "__doPostBack('btnRefresh','');");
+                                      } else if (sonuc ==
+                                          'Güvenlik kodu hatalı girildi !') {
+                                        handleError("Güvenlik kodu hatalı girildi",
+                                            secFocusNode);
+                                      } else if (sonuc ==
+                                          "HATA:D21032301:Kullanıcı adı veya şifresi geçersiz.") {
+                                        handleError(
+                                            "Kullanıcı Adı veya Şifre hatalı",
+                                            passwordFocusNode);
+                                      }
+                                      adjustForm();
+                                      setState(() {
+                                        secCodeOffstage = false;
+                                      });
+                                      secCodeController.clear();
+                                    }
+                                  },
+                                ),
+                              ),
+                              secCodeOffstage ? const CircularProgressIndicator() : Container()]
                             ),
                           ),
                         ),
@@ -592,18 +604,18 @@ class _LoginPageState extends State<LoginPage> {
                 child: ChangeThemeButtonWidget(),
               ),
               Positioned(
-                bottom: 10,
+                top: 10,
                 left: 10,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  verticalDirection: VerticalDirection.up,
+                  verticalDirection: VerticalDirection.down,
                   children: [
                     IconButton(
                       onPressed: () {
                         setState(() {
                           _infoOffstage = !_infoOffstage;
                         });
-                        Future.delayed(const Duration(seconds: 5), () {
+                        Future.delayed(const Duration(seconds: 10), () {
                           setState(() {
                             _infoOffstage = true;
                           });
@@ -615,16 +627,16 @@ class _LoginPageState extends State<LoginPage> {
                         opacity: _infoOffstage ? 0 : 1,
                         duration: const Duration(milliseconds: 200),
                         child: Container(
-                            width: MediaQuery.of(context).size.width * 3/4,
-                            decoration: BoxDecoration(
-                                color: Colors.green.withOpacity(0.6),
-                                borderRadius: BorderRadius.circular(10)),
-                            padding: const EdgeInsets.all(8.0),
-                            child: const Text(
-                              "Bu uygulamada kullanılan ve kaydedilen hiçbir veri üçüncü bir taraf ile paylaşılmamakta olup hepsi cihazınızda şifrelenmiş bir şekilde saklanmaktadır.",
-                              softWrap: true,
-                              style: TextStyle(fontSize: 10),
-                            ))),
+                          width: MediaQuery.of(context).size.width * 3/4,
+                          decoration: BoxDecoration(
+                              color: Colors.green[800]?.withOpacity(0.9),
+                              borderRadius: const BorderRadius.only(topRight: Radius.circular(15), bottomLeft: Radius.circular(15), bottomRight: Radius.circular(15),),),
+                          padding: const EdgeInsets.all(8.0),
+                          child: const Text(
+                            "Verileriniz bizimle güvende.\nCihazınızda şifreli olarak saklanırlar ve hiçbir zaman üçüncü taraflarla paylaşılmazlar.",
+                            softWrap: true,
+                            style: TextStyle(fontSize: 11, color: Colors.white),
+                          ))),
                   ],
                 ),
               ),
@@ -645,23 +657,21 @@ class _LoginPageState extends State<LoginPage> {
                         child: SizedBox(
                           height: MediaQuery.of(context).size.width,
                           child: InAppWebView(
-                            initialUrlRequest: URLRequest(url: Uri.parse(link)),
+                            initialUrlRequest: URLRequest(url: Uri.parse(obsLink)),
                             onWebViewCreated:(InAppWebViewController controller) {edevletcontroller = controller;},
                             onLoadStart: (InAppWebViewController controller,Uri? url) {
                             },
                             onLoadStop: (InAppWebViewController controller,Uri? url) async {
                               controller.evaluateJavascript(source:"__doPostBack('btnEdevletLogin','');");
                               Future.delayed(const Duration(seconds: 1),() async {
-                                await controller.evaluateJavascript(source:"document.getElementById('smartbanner').style.display = 'none'; document.querySelector('#loginForm > div.formSubmitRow > input.backButton').style.display = 'none';");
-                                await controller.scrollTo(x: 0, y: 840);
+                                await controller.evaluateJavascript(source:"document.getElementById('smartbanner').style.display = 'none'; document.querySelector('#loginForm > div.formSubmitRow > input.backButton').style.display = 'none'; document.getElementById('pageContent').scrollIntoView(); document.querySelectorAll('a').forEach(function(link) {link.addEventListener('click', function(event) {event.preventDefault();});});");
                                 String tckn =await UserSecureStorage.getTCKN() ?? '';
                                 String eDevletPassword = await UserSecureStorage.getEdevletPassword() ??'';
                                 if (tckn.isNotEmpty && eDevletPassword.isNotEmpty) {
                                   await controller.evaluateJavascript(source:"document.getElementById('tridField').value = '$tckn'; document.getElementById('egpField').value = '$eDevletPassword';");}
                               });
-                              Uri? location = await controller.getUrl();
-                              if (await controller.canGoBack() && location.toString() != edevletlink) {
-                                goToHomePage(location.toString());
+                              if (await controller.canGoBack() && url.toString() != edevletlink && !url.toString().contains("www")) {
+                                goToHomePage(url.toString());
                               }
                             },
                           ),

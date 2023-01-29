@@ -1,9 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'main.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:html/dom.dart' as dom;
-import 'package:html/parser.dart';
 import 'dart:math' as math;
 
 class HomePage extends StatefulWidget {
@@ -17,25 +14,10 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late InAppWebViewController webViewController;
   final GlobalKey webViewKey = GlobalKey();
-  String framehtml = '';
-  String pagehtml = '';
+  DateTime timeBackPressed = DateTime.now();
+  bool exitWarningOpacity = false;
   List navItems = [];
   int bottomNavIndex = 2;
-
-  // List<String> branches = [];
-  // List<String> subjectCodes = [];
-  // List<String> subjects = [];
-  // List<String> lastState = [];
-  // List<String> grades = [];
-  // List<String> averages = [];
-  // List<String> letterGrades = [];
-  // List<String> states = [];
-
-  // Future getWebsiteData(String rawHtml) async {
-  //   dom.Document html = parse(rawHtml);
-  //   final navlinks = html.getElementsByClassName('nav-link');
-  //   print(navlinks[1]);
-  // }
 
   void logOut() async {
     await webViewController.evaluateJavascript(
@@ -47,18 +29,6 @@ class _HomePageState extends State<HomePage> {
         context, MaterialPageRoute(builder: (context) => const LoginPage()));
   }
 
-  void createItems() async {
-    LineSplitter ls = const LineSplitter();
-    dom.Document html = dom.Document.html(pagehtml);
-    final navItems = html
-        .querySelectorAll('.nav-item.has-treeview')
-        .map((element) => element.text)
-        .toList();
-    setState(() {
-      this.navItems = navItems;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -67,29 +37,24 @@ class _HomePageState extends State<HomePage> {
           webViewController.goBack();
           return false;
         } else {
-          showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                    actions: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                        TextButton(
-                            onPressed: () {
-                              logOut();
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text("Çıkış Yap", style: TextStyle(color: Colors.red, decoration: TextDecoration.underline),)),
-                        TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text("Sitede Kal")),
-                      ]),
-                    ],
-                    title: const Text("Çıkış yapmak istiyor musunuz?"),
-                  ));
-          return false;
+          final difference = DateTime.now().difference(timeBackPressed);
+          final isExitWarning = difference >= const Duration(seconds: 2);
+          timeBackPressed = DateTime.now();
+
+          if (isExitWarning) {
+            setState(() {
+              exitWarningOpacity = true;
+            });
+            Future.delayed(const Duration(seconds: 2), () {
+              setState(() {
+                exitWarningOpacity = false;
+              });
+            });
+            return false;
+          } else {
+            logOut();
+            return false;
+          }
         }
       },
       child: Scaffold(
@@ -133,7 +98,10 @@ class _HomePageState extends State<HomePage> {
                 icon: Transform(
                     alignment: Alignment.center,
                     transform: Matrix4.rotationY(math.pi),
-                    child: const Icon(Icons.logout, color: Colors.red,)),
+                    child: const Icon(
+                      Icons.logout,
+                      color: Colors.red,
+                    )),
                 label: "Çıkış"),
             const BottomNavigationBarItem(
                 icon: Icon(Icons.calendar_month), label: "Ders Programı"),
@@ -146,36 +114,49 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
         body: SafeArea(
-          child: InAppWebView(
-            onConsoleMessage: (controller, consoleMessage) {
-              print('Console Message: ${consoleMessage.message}');
-              framehtml = consoleMessage.message;
-              setState(() {});
-            },
-            key: webViewKey,
-            initialUrlRequest:
-                URLRequest(url: Uri.parse(widget.redirecturl.toString())),
-            onWebViewCreated: (InAppWebViewController controller) {
-              webViewController = controller;
-            },
-            onLoadStart: (InAppWebViewController controller, Uri? url) {},
-            onLoadStop:
-                (InAppWebViewController controller, Uri? url) async {
-              if (url.toString() == link) {
-                goToLoginPage();
-              }
-              // else {
-              //   framehtml = await controller.evaluateJavascript(
-              //       source:
-              //           "var frameObj =document.getElementById('IFRAME1');var frameContent = frameObj.contentWindow.document.body; frameContent.innerHTML.toString();");
-              //   pagehtml = await controller.evaluateJavascript(
-              //       source: "document.body.innerHTML;");
-              //   createItems();
-              //   setState(() {});
-              //   print(pagehtml);
-              // }
-            },
-          ),
+          child: Stack(children: [
+            InAppWebView(
+              key: webViewKey,
+              initialUrlRequest:
+                  URLRequest(url: Uri.parse(widget.redirecturl.toString())),
+              onWebViewCreated: (InAppWebViewController controller) {
+                webViewController = controller;
+              },
+              onLoadStart: (InAppWebViewController controller, Uri? url) {},
+              onLoadStop: (InAppWebViewController controller, Uri? url) async {
+                if (url.toString() == obsLink) {
+                  goToLoginPage();
+                }
+              },
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: AnimatedOpacity(
+                    opacity: exitWarningOpacity ? 1 : 0,
+                    duration: const Duration(milliseconds: 300),
+                    child: Container(
+                      height: 36,
+                      width: 160,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                          color: Colors.grey,
+                          borderRadius: BorderRadius.circular(20)),
+                      child: const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                          "Çıkmak için tekrar basın",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    )),
+              ),
+            )
+          ]),
         ),
       ),
     );
