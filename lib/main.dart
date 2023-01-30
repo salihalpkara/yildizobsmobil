@@ -2,13 +2,17 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'home_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
+// Little UX improvements are going to be made when noticed. The bottom navigation bar index can be updated according to the current page's content. There are no problems with functionality at all. Can be launched after publishing procedures. Login page sometimes don't allow correct security code. Login button should set username and password.
+
+
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(ChangeNotifierProvider(
@@ -16,6 +20,7 @@ void main() {
     builder: (context, _) {
       final themeProvider = Provider.of<ThemeProvider>(context);
       return MaterialApp(
+        title: "Yıldız OBS Mobil",
         themeMode: themeProvider.themeMode,
         theme: MyThemes.lightTheme,
         darkTheme: MyThemes.darkTheme,
@@ -54,8 +59,8 @@ class ThemeProvider extends ChangeNotifier {
   }
 
   Future<void> _getThemePreference() async {
-    final themePreference = await UserSecureStorage.getTheme() ?? "true";
-    themeMode = themePreference == "true" ? ThemeMode.dark : ThemeMode.light;
+    final themePreference = await UserSecureStorage.getTheme();
+    themeMode = themePreference == "false" ? ThemeMode.light : ThemeMode.dark;
     notifyListeners();
   }
 
@@ -93,7 +98,9 @@ class LoginPage extends StatefulWidget {
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
+
 String obsLink = "https://obs.yildiz.edu.tr/oibs/ogrenci/login.aspx";
+
 class _LoginPageState extends State<LoginPage> {
   late InAppWebViewController edevletcontroller;
   String edevletlink =
@@ -104,7 +111,8 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController TCKNController = TextEditingController();
-  final TextEditingController eDevletPasswordController =TextEditingController();
+  final TextEditingController eDevletPasswordController =
+      TextEditingController();
   late FocusNode secFocusNode;
   late FocusNode usernameFocusNode;
   late FocusNode passwordFocusNode;
@@ -116,13 +124,12 @@ class _LoginPageState extends State<LoginPage> {
   bool _infoOffstage = true;
   bool _offstage = true;
   bool secCodeOffstage = true;
+  int obsLoadCounter = 0;
 
   void logOut() async {
     await webViewController.evaluateJavascript(
         source: "__doPostBack('btnRefresh',''); __doPostBack('btnLogout','');");
   }
-
-  void edevletgiris() {}
 
   void login() async {
     await UserSecureStorage.setUsername(usernameController.text);
@@ -140,27 +147,12 @@ class _LoginPageState extends State<LoginPage> {
         source: "document.getElementById('btnLogin').click();");
   }
 
-  @override
-  void initState() {
-    super.initState();
-    secFocusNode = FocusNode();
-    usernameFocusNode = FocusNode();
-    passwordFocusNode = FocusNode();
-    eDevletPasswordFocusNode = FocusNode();
-    init();
-    secCodeController.text = '';
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      adjustForm();
-    });
-  }
-
   Future init() async {
-    final name = await UserSecureStorage.getUsername() ?? '';
-    final password = await UserSecureStorage.getPassword() ?? '';
-    final TCKN = await UserSecureStorage.getTCKN() ?? '';
-    final eDevletPassword = await UserSecureStorage.getEdevletPassword() ?? '';
-
+    final String name = await UserSecureStorage.getUsername();
+    final String password = await UserSecureStorage.getPassword();
+    final String TCKN = await UserSecureStorage.getTCKN();
+    final String eDevletPassword =
+        await UserSecureStorage.getEdevletPassword();
     setState(() {
       usernameController.text = name;
       passwordController.text = password;
@@ -170,6 +162,19 @@ class _LoginPageState extends State<LoginPage> {
     setFocus();
     login();
   }
+
+  @override
+  void initState() {
+    super.initState();
+    secFocusNode = FocusNode();
+    usernameFocusNode = FocusNode();
+    passwordFocusNode = FocusNode();
+    eDevletPasswordFocusNode = FocusNode();
+    init();
+    secCodeController.text = '';
+  }
+
+
 
   void setFocus() {
     if (usernameController.text == '') {
@@ -214,7 +219,7 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SizedBox(
-                      height: MediaQuery.of(context).size.height / 5,
+                      height: MediaQuery.of(context).size.height* 2/11 ,
                       child: Image.asset("assets/images/ytu_logo.png"),
                     ),
                     const Padding(
@@ -228,8 +233,13 @@ class _LoginPageState extends State<LoginPage> {
                       padding: const EdgeInsets.fromLTRB(15, 20, 15, 10),
                       child: TextField(
                         focusNode: usernameFocusNode,
-                        onSubmitted: (username) {
+                        onChanged: (username) {
                           setState(() {
+                            UserSecureStorage.setUsername(username);
+                          });
+                        },
+                        onSubmitted: (username) {
+                          setState(()  {
                             UserSecureStorage.setUsername(username);
                           });
                           FocusScope.of(context)
@@ -249,6 +259,11 @@ class _LoginPageState extends State<LoginPage> {
                       child: TextField(
                         controller: passwordController,
                         focusNode: passwordFocusNode,
+                        onChanged: (password) {
+                          setState(() {
+                            UserSecureStorage.setPassword(password);
+                          });
+                        },
                         onSubmitted: (password) {
                           setState(() {
                             UserSecureStorage.setPassword(password);
@@ -306,58 +321,68 @@ class _LoginPageState extends State<LoginPage> {
                             height: 40,
                             child: Stack(
                                 alignment: AlignmentDirectional.center,
-                              children: [Offstage(
-                                offstage: secCodeOffstage,
-                                child: InAppWebView(
-                                  key: webViewKey,
-                                  initialUrlRequest:
-                                      URLRequest(url: Uri.parse(obsLink)),
-                                  onWebViewCreated:
-                                      (InAppWebViewController controller) {
-                                    webViewController = controller;
-                                  },
-                                  onLoadStart: (InAppWebViewController controller,
-                                      Uri? url) {
-                                    setState(() {
-                                      secCodeOffstage = true;
-                                    });
-                                  },
-                                  onLoadStop: (InAppWebViewController controller,
-                                      Uri? url) async {
-                                    if (url.toString() != obsLink) {
-                                      goToHomePage(url.toString());
-                                    } else {
-                                      String sonuc =
-                                          await controller.evaluateJavascript(
-                                                  source:
-                                                      "document.getElementById('lblSonuclar').innerHTML;")
+                                children: [
+                                  Offstage(
+                                    offstage: secCodeOffstage,
+                                    child: InAppWebView(
+                                      key: webViewKey,
+                                      initialUrlRequest:
+                                          URLRequest(url: Uri.parse(obsLink)),
+                                      onWebViewCreated:
+                                          (InAppWebViewController controller) {
+                                        webViewController = controller;
+                                      },
+                                      onLoadStart:
+                                          (InAppWebViewController controller,
+                                              Uri? url) {
+                                        obsLoadCounter++;
+                                        setState(() {
+                                          secCodeOffstage = true;
+                                        });
+                                      },
+                                      onLoadStop:
+                                          (InAppWebViewController controller,
+                                              Uri? url) async {
+                                        if (url.toString() != obsLink) {
+                                          goToHomePage(url.toString());
+                                        } else {
+                                          if (obsLoadCounter == 1) {
+                                            controller.reload();
+                                          }
+                                          String sonuc = await controller
+                                                  .evaluateJavascript(
+                                                      source:
+                                                          "document.getElementById('lblSonuclar').innerHTML;")
                                               as String;
-                                      if (sonuc ==
-                                          'UYARI!! Aynı tarayıcıdan birden fazla giriş yapılamaz. Lütfen tüm açık tarayıcıları kapatın ve tarayıcınızı yeniden başlatın.') {
-                                        controller.evaluateJavascript(
-                                            source:
-                                                "__doPostBack('btnRefresh','');");
-                                      } else if (sonuc ==
-                                          'Güvenlik kodu hatalı girildi !') {
-                                        handleError("Güvenlik kodu hatalı girildi",
-                                            secFocusNode);
-                                      } else if (sonuc ==
-                                          "HATA:D21032301:Kullanıcı adı veya şifresi geçersiz.") {
-                                        handleError(
-                                            "Kullanıcı Adı veya Şifre hatalı",
-                                            passwordFocusNode);
-                                      }
-                                      adjustForm();
-                                      setState(() {
-                                        secCodeOffstage = false;
-                                      });
-                                      secCodeController.clear();
-                                    }
-                                  },
-                                ),
-                              ),
-                              secCodeOffstage ? const CircularProgressIndicator() : Container()]
-                            ),
+                                          if (sonuc ==
+                                              'UYARI!! Aynı tarayıcıdan birden fazla giriş yapılamaz. Lütfen tüm açık tarayıcıları kapatın ve tarayıcınızı yeniden başlatın.') {
+                                            controller.evaluateJavascript(
+                                                source:
+                                                    "__doPostBack('btnRefresh','');");
+                                          } else if (sonuc ==
+                                              'Güvenlik kodu hatalı girildi !') {
+                                            handleError(
+                                                "Güvenlik Kodu hatalı girildi",
+                                                secFocusNode);
+                                          } else if (sonuc ==
+                                              "HATA:D21032301:Kullanıcı adı veya şifresi geçersiz.") {
+                                            handleError(
+                                                "Kullanıcı Adı veya Şifre hatalı",
+                                                passwordFocusNode);
+                                          }
+                                          adjustForm();
+                                          setState(() {
+                                            secCodeOffstage = false;
+                                          });
+                                          secCodeController.clear();
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                  secCodeOffstage
+                                      ? const CircularProgressIndicator()
+                                      : Container()
+                                ]),
                           ),
                         ),
                       ),
@@ -588,10 +613,11 @@ class _LoginPageState extends State<LoginPage> {
                               backgroundColor: const Color(0xffa19065),
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10))),
-                          onPressed: () {
+                          onPressed: () async {
+                            obsLoadCounter = 0;
                             login();
                           },
-                          child: const Text("Giriş Yap"),
+                          child: const Text("Giriş Yap", style: TextStyle(color: Colors.white),),
                         ),
                       ],
                     ),
@@ -627,16 +653,22 @@ class _LoginPageState extends State<LoginPage> {
                         opacity: _infoOffstage ? 0 : 1,
                         duration: const Duration(milliseconds: 200),
                         child: Container(
-                          width: MediaQuery.of(context).size.width * 3/4,
-                          decoration: BoxDecoration(
+                            width: MediaQuery.of(context).size.width * 3 / 4,
+                            decoration: BoxDecoration(
                               color: Colors.green[800]?.withOpacity(0.9),
-                              borderRadius: const BorderRadius.only(topRight: Radius.circular(15), bottomLeft: Radius.circular(15), bottomRight: Radius.circular(15),),),
-                          padding: const EdgeInsets.all(8.0),
-                          child: const Text(
-                            "Verileriniz bizimle güvende.\nCihazınızda şifreli olarak saklanırlar ve hiçbir zaman üçüncü taraflarla paylaşılmazlar.",
-                            softWrap: true,
-                            style: TextStyle(fontSize: 11, color: Colors.white),
-                          ))),
+                              borderRadius: const BorderRadius.only(
+                                topRight: Radius.circular(15),
+                                bottomLeft: Radius.circular(15),
+                                bottomRight: Radius.circular(15),
+                              ),
+                            ),
+                            padding: const EdgeInsets.all(8.0),
+                            child: const Text(
+                              "Verileriniz bizimle güvende.\nCihazınızda şifreli olarak saklanırlar ve hiçbir zaman üçüncü taraflarla paylaşılmazlar.",
+                              softWrap: true,
+                              style:
+                                  TextStyle(fontSize: 11, color: Colors.white),
+                            ))),
                   ],
                 ),
               ),
@@ -657,20 +689,38 @@ class _LoginPageState extends State<LoginPage> {
                         child: SizedBox(
                           height: MediaQuery.of(context).size.width,
                           child: InAppWebView(
-                            initialUrlRequest: URLRequest(url: Uri.parse(obsLink)),
-                            onWebViewCreated:(InAppWebViewController controller) {edevletcontroller = controller;},
-                            onLoadStart: (InAppWebViewController controller,Uri? url) {
+                            initialUrlRequest:
+                                URLRequest(url: Uri.parse(obsLink)),
+                            onWebViewCreated:
+                                (InAppWebViewController controller) {
+                              edevletcontroller = controller;
                             },
-                            onLoadStop: (InAppWebViewController controller,Uri? url) async {
-                              controller.evaluateJavascript(source:"__doPostBack('btnEdevletLogin','');");
-                              Future.delayed(const Duration(seconds: 1),() async {
-                                await controller.evaluateJavascript(source:"document.getElementById('smartbanner').style.display = 'none'; document.querySelector('#loginForm > div.formSubmitRow > input.backButton').style.display = 'none'; document.getElementById('pageContent').scrollIntoView(); document.querySelectorAll('a').forEach(function(link) {link.addEventListener('click', function(event) {event.preventDefault();});});");
-                                String tckn =await UserSecureStorage.getTCKN() ?? '';
-                                String eDevletPassword = await UserSecureStorage.getEdevletPassword() ??'';
-                                if (tckn.isNotEmpty && eDevletPassword.isNotEmpty) {
-                                  await controller.evaluateJavascript(source:"document.getElementById('tridField').value = '$tckn'; document.getElementById('egpField').value = '$eDevletPassword';");}
+                            onLoadStart: (InAppWebViewController controller,
+                                Uri? url) {},
+                            onLoadStop: (InAppWebViewController controller,
+                                Uri? url) async {
+                              controller.evaluateJavascript(
+                                  source:
+                                      "__doPostBack('btnEdevletLogin','');");
+                              Future.delayed(const Duration(seconds: 1),
+                                  () async {
+                                await controller.evaluateJavascript(
+                                    source:
+                                        "document.getElementById('smartbanner').style.display = 'none'; document.querySelector('#loginForm > div.formSubmitRow > input.backButton').style.display = 'none'; document.getElementById('pageContent').scrollIntoView(); document.querySelectorAll('a').forEach(function(link) {link.addEventListener('click', function(event) {event.preventDefault();});});");
+                                String tckn =
+                                    await UserSecureStorage.getTCKN();
+                                String eDevletPassword = await UserSecureStorage
+                                        .getEdevletPassword();
+                                if (tckn.isNotEmpty &&
+                                    eDevletPassword.isNotEmpty) {
+                                  await controller.evaluateJavascript(
+                                      source:
+                                          "document.getElementById('tridField').value = '$tckn'; document.getElementById('egpField').value = '$eDevletPassword';");
+                                }
                               });
-                              if (await controller.canGoBack() && url.toString() != edevletlink && !url.toString().contains("www")) {
+                              if (await controller.canGoBack() &&
+                                  url.toString() != edevletlink &&
+                                  !url.toString().contains("www")) {
                                 goToHomePage(url.toString());
                               }
                             },
@@ -696,35 +746,59 @@ class _LoginPageState extends State<LoginPage> {
 }
 
 class UserSecureStorage {
-  static const _storage = FlutterSecureStorage();
   static const _keyTheme = 'dark';
   static const _keyEdevletTCKN = 'TCKN';
   static const _keyEdevletPassword = 'edevletPassword';
   static const _keyUsername = 'username';
   static const _keyPassword = 'password';
-  static const _keyStudentName = 'studentName';
-  static Future setTheme(String isDark) async =>
-      await _storage.write(key: _keyTheme, value: isDark);
-  static Future setTCKN(String TCKN) async =>
-      await _storage.write(key: _keyEdevletTCKN, value: TCKN);
-  static Future setEdevletPassword(String password) async =>
-      await _storage.write(key: _keyEdevletPassword, value: password);
-  static Future setPassword(String password) async =>
-      await _storage.write(key: _keyPassword, value: password);
-  static Future setStudentName(String studentName) async =>
-      await _storage.write(key: _keyStudentName, value: studentName);
-  static Future setUsername(String username) async =>
-      await _storage.write(key: _keyUsername, value: username);
-  static Future<String?> getTCKN() async =>
-      await _storage.read(key: _keyEdevletTCKN);
-  static Future<String?> getEdevletPassword() async =>
-      await _storage.read(key: _keyEdevletPassword);
-  static Future<String?> getTheme() async =>
-      await _storage.read(key: _keyTheme);
-  static Future<String?> getPassword() async =>
-      await _storage.read(key: _keyPassword);
-  static Future<String?> getUsername() async =>
-      await _storage.read(key: _keyUsername);
-  static Future<String?> getStudentName() async =>
-      await _storage.read(key: _keyStudentName);
+
+  static Future<void> setTheme(String isDark) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyTheme, isDark);
+  }
+
+  static Future<void> setTCKN(String TCKN) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyEdevletTCKN, TCKN);
+  }
+
+  static Future<void> setEdevletPassword(String password) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyEdevletPassword, password);
+  }
+
+  static Future<void> setPassword(String password) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyPassword, password);
+  }
+
+  static Future<void> setUsername(String username) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyUsername, username);
+  }
+
+  static Future<String> getTCKN() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_keyEdevletTCKN) ?? '';
+  }
+
+  static Future<String> getEdevletPassword() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_keyEdevletPassword) ?? '';
+  }
+
+  static Future<String> getTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_keyTheme) ?? '';
+  }
+
+  static Future<String> getPassword() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_keyPassword) ?? '';
+  }
+
+  static Future<String> getUsername() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_keyUsername) ?? '';
+  }
 }
