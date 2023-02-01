@@ -111,8 +111,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController TCKNController = TextEditingController();
-  final TextEditingController eDevletPasswordController =
-      TextEditingController();
+  final TextEditingController eDevletPasswordController = TextEditingController();
   late FocusNode secFocusNode;
   late FocusNode usernameFocusNode;
   late FocusNode passwordFocusNode;
@@ -136,13 +135,13 @@ class _LoginPageState extends State<LoginPage> {
     await UserSecureStorage.setPassword(passwordController.text);
     await webViewController.evaluateJavascript(
         source:
-            "document.getElementById('txtParamT01').value = '${usernameController.text}';");
+        "document.getElementById('txtParamT01').value = '${usernameController.text}';");
     await webViewController.evaluateJavascript(
         source:
-            "document.getElementById('txtParamT02').value = '${passwordController.text}';");
+        "document.getElementById('txtParamT02').value = '${passwordController.text}';");
     await webViewController.evaluateJavascript(
         source:
-            "document.getElementById('txtSecCode').value = '${secCodeController.text}';");
+        "document.getElementById('txtSecCode').value = '${secCodeController.text}';");
     await webViewController.evaluateJavascript(
         source: "document.getElementById('btnLogin').click();");
   }
@@ -152,7 +151,7 @@ class _LoginPageState extends State<LoginPage> {
     final String password = await UserSecureStorage.getPassword();
     final String TCKN = await UserSecureStorage.getTCKN();
     final String eDevletPassword =
-        await UserSecureStorage.getEdevletPassword();
+    await UserSecureStorage.getEdevletPassword();
     setState(() {
       usernameController.text = name;
       passwordController.text = password;
@@ -189,7 +188,7 @@ class _LoginPageState extends State<LoginPage> {
   void adjustForm() async {
     await webViewController.evaluateJavascript(
         source:
-            "setInterval(function() {window.location.reload();}, 300000); var imgCaptchaImg = document.getElementById('imgCaptchaImg'); document.body.appendChild(imgCaptchaImg); imgCaptchaImg.style.width = 'auto';imgCaptchaImg.style.height = 'auto';document.getElementById('form1').style.display = 'none';document.getElementById('imgCaptchaImg').onclick = '';");
+        "setInterval(function() {window.location.reload();}, 300000); var imgCaptchaImg = document.getElementById('imgCaptchaImg'); document.body.appendChild(imgCaptchaImg); imgCaptchaImg.style.width = 'auto';imgCaptchaImg.style.height = 'auto';document.getElementById('form1').style.display = 'none';document.getElementById('imgCaptchaImg').onclick = '';");
   }
 
   void goToHomePage(String compurl) {
@@ -327,14 +326,14 @@ class _LoginPageState extends State<LoginPage> {
                                     child: InAppWebView(
                                       key: webViewKey,
                                       initialUrlRequest:
-                                          URLRequest(url: Uri.parse(obsLink)),
+                                      URLRequest(url: Uri.parse(obsLink)),
                                       onWebViewCreated:
                                           (InAppWebViewController controller) {
                                         webViewController = controller;
                                       },
                                       onLoadStart:
                                           (InAppWebViewController controller,
-                                              Uri? url) {
+                                          Uri? url) {
                                         obsLoadCounter++;
                                         setState(() {
                                           secCodeOffstage = true;
@@ -342,7 +341,7 @@ class _LoginPageState extends State<LoginPage> {
                                       },
                                       onLoadStop:
                                           (InAppWebViewController controller,
-                                              Uri? url) async {
+                                          Uri? url) async {
                                         if (url.toString() != obsLink) {
                                           goToHomePage(url.toString());
                                         } else {
@@ -350,15 +349,15 @@ class _LoginPageState extends State<LoginPage> {
                                             controller.reload();
                                           }
                                           String sonuc = await controller
-                                                  .evaluateJavascript(
-                                                      source:
-                                                          "document.getElementById('lblSonuclar').innerHTML;")
-                                              as String;
+                                              .evaluateJavascript(
+                                              source:
+                                              "document.getElementById('lblSonuclar').innerHTML;")
+                                          as String;
                                           if (sonuc ==
                                               'UYARI!! Aynı tarayıcıdan birden fazla giriş yapılamaz. Lütfen tüm açık tarayıcıları kapatın ve tarayıcınızı yeniden başlatın.') {
                                             controller.evaluateJavascript(
                                                 source:
-                                                    "__doPostBack('btnRefresh','');");
+                                                "__doPostBack('btnRefresh','');");
                                           } else if (sonuc ==
                                               'Güvenlik kodu hatalı girildi !') {
                                             handleError(
@@ -394,11 +393,10 @@ class _LoginPageState extends State<LoginPage> {
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
                                 foregroundColor: Colors.white,
-                                backgroundColor:
-                                    const Color.fromARGB(255, 208, 1, 27),
+                                backgroundColor:const Color.fromARGB(255, 208, 1, 27),
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10))),
-                            onPressed: () {
+                            onPressed: () async {
                               setState(() {
                                 _offstage = !_offstage;
                               });
@@ -433,171 +431,172 @@ class _LoginPageState extends State<LoginPage> {
                                     builder: (context) => StatefulBuilder(
                                       builder: (context, setStatee) =>
                                           AlertDialog(
-                                        title: const Text(
-                                          "e-Devlet Giriş Bilgilerini Düzenle",
-                                          textAlign: TextAlign.center,
-                                        ),
-                                        content: SizedBox(
-                                          height: 195,
-                                          child: Column(
-                                            children: [
-                                              Padding(
-                                                padding:
+                                            title: const Text(
+                                              "e-Devlet Giriş Bilgilerini Düzenle",
+                                              textAlign: TextAlign.center,
+                                            ),
+                                            content: SizedBox(
+                                              height: 195,
+                                              child: Column(
+                                                children: [
+                                                  Padding(
+                                                    padding:
                                                     const EdgeInsets.fromLTRB(
                                                         0, 0, 0, 10),
-                                                child: TextField(
-                                                  autofocus: true,
-                                                  obscureText: _obscureTCKN,
-                                                  controller: TCKNController,
-                                                  onSubmitted: (TCKN) {
-                                                    setState(() {
-                                                      UserSecureStorage.setTCKN(
-                                                          TCKN);
-                                                      FocusScope.of(context)
-                                                          .requestFocus(
+                                                    child: TextField(
+                                                      autofocus: true,
+                                                      obscureText: _obscureTCKN,
+                                                      keyboardType: TextInputType.number,
+                                                      controller: TCKNController,
+                                                      onSubmitted: (TCKN) {
+                                                        setState(() {
+                                                          UserSecureStorage.setTCKN(
+                                                              TCKN);
+                                                          FocusScope.of(context)
+                                                              .requestFocus(
                                                               eDevletPasswordFocusNode);
-                                                    });
-                                                  },
-                                                  textInputAction:
-                                                      TextInputAction.next,
-                                                  decoration: InputDecoration(
-                                                    focusColor:
-                                                        const Color.fromARGB(
-                                                            255, 28, 39, 86),
-                                                    suffixIcon: IconButton(
-                                                      icon: AnimatedCrossFade(
-                                                        firstChild: const Icon(
-                                                            Icons
-                                                                .visibility_off),
-                                                        secondChild: const Icon(
-                                                            Icons.visibility),
-                                                        crossFadeState:
-                                                            _obscureTCKN
-                                                                ? CrossFadeState
-                                                                    .showFirst
-                                                                : CrossFadeState
-                                                                    .showSecond,
-                                                        duration:
-                                                            const Duration(
-                                                                milliseconds:
-                                                                    250),
-                                                      ),
-                                                      color: Colors.grey,
-                                                      onPressed: () {
-                                                        setStatee(() {
-                                                          _obscureTCKN =
-                                                              !_obscureTCKN;
                                                         });
                                                       },
-                                                    ),
-                                                    border: OutlineInputBorder(
-                                                        borderRadius:
+                                                      textInputAction:
+                                                      TextInputAction.next,
+                                                      decoration: InputDecoration(
+                                                        focusColor:
+                                                        const Color.fromARGB(
+                                                            255, 28, 39, 86),
+                                                        suffixIcon: IconButton(
+                                                          icon: AnimatedCrossFade(
+                                                            firstChild: const Icon(
+                                                                Icons
+                                                                    .visibility_off),
+                                                            secondChild: const Icon(
+                                                                Icons.visibility),
+                                                            crossFadeState:
+                                                            _obscureTCKN
+                                                                ? CrossFadeState
+                                                                .showFirst
+                                                                : CrossFadeState
+                                                                .showSecond,
+                                                            duration:
+                                                            const Duration(
+                                                                milliseconds:
+                                                                250),
+                                                          ),
+                                                          color: Colors.grey,
+                                                          onPressed: () {
+                                                            setStatee(() {
+                                                              _obscureTCKN =
+                                                              !_obscureTCKN;
+                                                            });
+                                                          },
+                                                        ),
+                                                        border: OutlineInputBorder(
+                                                            borderRadius:
                                                             BorderRadius
                                                                 .circular(20)),
-                                                    labelText:
+                                                        labelText:
                                                         "TC Kimlik Numarası",
-                                                  ),
-                                                ),
-                                              ),
-                                              TextField(
-                                                controller:
-                                                    eDevletPasswordController,
-                                                onSubmitted: (password) {
-                                                  UserSecureStorage
-                                                      .setEdevletPassword(
-                                                          password);
-                                                },
-                                                focusNode:
-                                                    eDevletPasswordFocusNode,
-                                                obscureText: true,
-                                                decoration: InputDecoration(
-                                                  focusColor:
-                                                      const Color.fromARGB(
-                                                          255, 28, 39, 86),
-                                                  border: OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              20)),
-                                                  labelText: "e-Devlet Şifresi",
-                                                ),
-                                              ),
-                                              const Padding(
-                                                padding:
-                                                    EdgeInsets.only(top: 20),
-                                                child: Text(
-                                                  "e-Devlet ile girişlerinizde TCKN ve e-Devlet şifrenizin otomatik doldurulması için bu bölümü doldurabilirsiniz.",
-                                                  style:
-                                                      TextStyle(fontSize: 14),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        actions: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceAround,
-                                            children: [
-                                              TextButton(
-                                                onPressed: () async {
-                                                  UserSecureStorage.setTCKN('');
-                                                  UserSecureStorage
-                                                      .setEdevletPassword('');
-                                                  setState(() {
-                                                    TCKNController.text = '';
-                                                    eDevletPasswordController
-                                                        .text = '';
-                                                  });
-                                                  Navigator.of(context).pop();
-                                                  await edevletcontroller
-                                                      .evaluateJavascript(
-                                                          source:
-                                                              "document.getElementById('tridField').value = ''; document.getElementById('egpField').value = '';");
-                                                },
-                                                child: const Text(
-                                                  "Bilgileri Sil",
-                                                  style: TextStyle(
-                                                      color: Colors.red,
-                                                      decoration: TextDecoration
-                                                          .underline),
-                                                ),
-                                              ),
-                                              Row(
-                                                children: [
-                                                  TextButton(
-                                                    onPressed: () {
-                                                      Navigator.of(context)
-                                                          .pop();
-                                                    },
-                                                    child: const Text(
-                                                      "İptal",
-                                                      style: TextStyle(
-                                                          color: Colors.red),
+                                                      ),
                                                     ),
                                                   ),
-                                                  TextButton(
-                                                    onPressed: () async {
-                                                      UserSecureStorage.setTCKN(
-                                                          TCKNController.text);
+                                                  TextField(
+                                                    controller:
+                                                    eDevletPasswordController,
+                                                    onSubmitted: (password) {
                                                       UserSecureStorage
                                                           .setEdevletPassword(
-                                                              eDevletPasswordController
-                                                                  .text);
-                                                      Navigator.of(context)
-                                                          .pop();
+                                                          password);
+                                                    },
+                                                    focusNode:
+                                                    eDevletPasswordFocusNode,
+                                                    obscureText: true,
+                                                    decoration: InputDecoration(
+                                                      focusColor:
+                                                      const Color.fromARGB(
+                                                          255, 28, 39, 86),
+                                                      border: OutlineInputBorder(
+                                                          borderRadius:
+                                                          BorderRadius.circular(
+                                                              20)),
+                                                      labelText: "e-Devlet Şifresi",
+                                                    ),
+                                                  ),
+                                                  const Padding(
+                                                    padding:
+                                                    EdgeInsets.only(top: 20),
+                                                    child: Text(
+                                                      "e-Devlet ile girişlerinizde TCKN ve e-Devlet şifrenizin otomatik doldurulması için bu bölümü doldurabilirsiniz.",
+                                                      style:
+                                                      TextStyle(fontSize: 14),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            actions: [
+                                              Row(
+                                                mainAxisAlignment:
+                                                MainAxisAlignment.spaceAround,
+                                                children: [
+                                                  TextButton(
+                                                    onPressed: () async {
+                                                      UserSecureStorage.setTCKN('');
+                                                      UserSecureStorage
+                                                          .setEdevletPassword('');
+                                                      setState(() {
+                                                        TCKNController.text = '';
+                                                        eDevletPasswordController
+                                                            .text = '';
+                                                      });
+                                                      Navigator.of(context).pop();
                                                       await edevletcontroller
                                                           .evaluateJavascript(
-                                                              source:
-                                                                  "document.getElementById('tridField').value = '${TCKNController.text}'; document.getElementById('egpField').value = '${eDevletPasswordController.text}';");
+                                                          source:
+                                                          "document.getElementById('tridField').value = ''; document.getElementById('egpField').value = '';");
                                                     },
-                                                    child: const Text("Kaydet"),
+                                                    child: const Text(
+                                                      "Bilgileri Sil",
+                                                      style: TextStyle(
+                                                          color: Colors.red,
+                                                          decoration: TextDecoration
+                                                              .underline),
+                                                    ),
+                                                  ),
+                                                  Row(
+                                                    children: [
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        },
+                                                        child: const Text(
+                                                          "İptal",
+                                                          style: TextStyle(
+                                                              color: Colors.red),
+                                                        ),
+                                                      ),
+                                                      TextButton(
+                                                        onPressed: () async {
+                                                          UserSecureStorage.setTCKN(
+                                                              TCKNController.text);
+                                                          UserSecureStorage
+                                                              .setEdevletPassword(
+                                                              eDevletPasswordController
+                                                                  .text);
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                          await edevletcontroller
+                                                              .evaluateJavascript(
+                                                              source:
+                                                              "document.getElementById('tridField').value = '${TCKNController.text}'; document.getElementById('egpField').value = '${eDevletPasswordController.text}';");
+                                                        },
+                                                        child: const Text("Kaydet"),
+                                                      ),
+                                                    ],
                                                   ),
                                                 ],
                                               ),
                                             ],
                                           ),
-                                        ],
-                                      ),
                                     ),
                                   );
                                 },
@@ -667,7 +666,7 @@ class _LoginPageState extends State<LoginPage> {
                               "Verileriniz bizimle güvende.\nCihazınızda şifreli olarak saklanırlar ve hiçbir zaman üçüncü taraflarla paylaşılmazlar.",
                               softWrap: true,
                               style:
-                                  TextStyle(fontSize: 11, color: Colors.white),
+                              TextStyle(fontSize: 11, color: Colors.white),
                             ))),
                   ],
                 ),
@@ -690,7 +689,7 @@ class _LoginPageState extends State<LoginPage> {
                           height: MediaQuery.of(context).size.width,
                           child: InAppWebView(
                             initialUrlRequest:
-                                URLRequest(url: Uri.parse(obsLink)),
+                            URLRequest(url: Uri.parse(obsLink)),
                             onWebViewCreated:
                                 (InAppWebViewController controller) {
                               edevletcontroller = controller;
@@ -701,23 +700,23 @@ class _LoginPageState extends State<LoginPage> {
                                 Uri? url) async {
                               controller.evaluateJavascript(
                                   source:
-                                      "__doPostBack('btnEdevletLogin','');");
+                                  "__doPostBack('btnEdevletLogin','');");
                               Future.delayed(const Duration(seconds: 1),
-                                  () async {
-                                await controller.evaluateJavascript(
-                                    source:
+                                      () async {
+                                    await controller.evaluateJavascript(
+                                        source:
                                         "document.getElementById('smartbanner').style.display = 'none'; document.querySelector('#loginForm > div.formSubmitRow > input.backButton').style.display = 'none'; document.getElementById('pageContent').scrollIntoView(); document.querySelectorAll('a').forEach(function(link) {link.addEventListener('click', function(event) {event.preventDefault();});});");
-                                String tckn =
+                                    String tckn =
                                     await UserSecureStorage.getTCKN();
-                                String eDevletPassword = await UserSecureStorage
+                                    String eDevletPassword = await UserSecureStorage
                                         .getEdevletPassword();
-                                if (tckn.isNotEmpty &&
-                                    eDevletPassword.isNotEmpty) {
-                                  await controller.evaluateJavascript(
-                                      source:
+                                    if (tckn.isNotEmpty &&
+                                        eDevletPassword.isNotEmpty) {
+                                      await controller.evaluateJavascript(
+                                          source:
                                           "document.getElementById('tridField').value = '$tckn'; document.getElementById('egpField').value = '$eDevletPassword';");
-                                }
-                              });
+                                    }
+                                  });
                               if (await controller.canGoBack() &&
                                   url.toString() != edevletlink &&
                                   !url.toString().contains("www")) {
