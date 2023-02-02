@@ -106,7 +106,6 @@ class _LoginPageState extends State<LoginPage> {
   String edevletlink =
       "giris.turkiye.gov.tr/Giris/gir?oauthClientId=640cbd04-b79a-4457-8acf-323ac1d4075b&continue=https%3A%2F%2Fgiris.turkiye.gov.tr%2FOAuth2AuthorizationServer%2FAuthorizationController%3Fresponse_type%3Dcode%26client_id%3D640cbd04-b79a-4457-8acf-323ac1d4075b%26state%3DOgrenci%26scope%3DKimlik-Dogrula%253BAd-Soyad%26redirect_uri%3Dhttps%253A%252F%252Fobs.yildiz.edu.tr%252Frouter.aspx";
   late InAppWebViewController webViewController;
-  final GlobalKey webViewKey = GlobalKey();
   final TextEditingController secCodeController = TextEditingController();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -324,7 +323,6 @@ class _LoginPageState extends State<LoginPage> {
                                   Offstage(
                                     offstage: secCodeOffstage,
                                     child: InAppWebView(
-                                      key: webViewKey,
                                       initialUrlRequest:
                                       URLRequest(url: Uri.parse(obsLink)),
                                       onWebViewCreated:
@@ -396,7 +394,7 @@ class _LoginPageState extends State<LoginPage> {
                                 backgroundColor:const Color.fromARGB(255, 208, 1, 27),
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10))),
-                            onPressed: () async {
+                            onPressed: () {
                               setState(() {
                                 _offstage = !_offstage;
                               });
@@ -718,8 +716,7 @@ class _LoginPageState extends State<LoginPage> {
                                     }
                                   });
                               if (await controller.canGoBack() &&
-                                  url.toString() != edevletlink &&
-                                  !url.toString().contains("www")) {
+                                  url.toString() != edevletlink) {
                                 goToHomePage(url.toString());
                               }
                             },
@@ -735,12 +732,6 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
-  }
-
-  Future openEdevletDialog() async {
-    setState(() {
-      _offstage = !_offstage;
-    });
   }
 }
 
