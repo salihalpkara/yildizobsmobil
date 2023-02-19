@@ -6,7 +6,7 @@ This app makes it easier to login to YTU Student Affairs Information System (OBS
 
 While I was walking quickly to catch up with the lesson, I was having difficulties when I had to log into the system to find out which class the lesson would be in, because I was misclicking and this was slowing me down. In order to prevent this, I developed this application that requires minimum typing and minimum button click. I achieved minimum typing by remembering usernames, passwords and E-Government login information. And by adding a bottom navigation bar that has the frequently used pages, I achieved the minimum click. 
 
-To display the OBS website in my app, I utilized Flutter InAppWebView, and to remember the user's login information, I used Shared Preferences.
+To display the OBS website in my app, I utilized Flutter InAppWebView, and to remember the user's login information, I used Shared Preferences. I used Javascript to display the security code on the login screen, to automatically fill out the forms with the information provided by the user, and to switch pages within the site.
 
 ## TR
 
@@ -14,7 +14,7 @@ Bu uygulama, kullanıcı adı ve şifreleri hatırlayan bir arayüz sağlayarak 
 
 Dersime yetişmek için hızlıca yürürken, dersin hangi sınıfta olduğunu öğrenmek için sistemde oturum açmam gerektiğinde yaptığım yanlış tıklamalar beni yavaşlatıyordu. Bu sorunu çözmek için, minimum yazma ve minimum tıklama gerektiren bir uygulama geliştirdim. Kullanıcı adlarını, şifreleri ve E-Devlet giriş bilgilerini hatırlayarak minimum yazmayı, sık kullanılan sayfaları içeren alt gezinim çubuğu (bottom navigation bar) ekleyerek de minimum tıklamayı elde ettim.
 
-Uygulamada OBS web sitesini görüntülemek için Flutter InAppWebView kullanırken, kullanıcının oturum açma bilgilerini hatırlamak için Shared Preferences kullandım.
+Uygulamada OBS web sitesini görüntülemek için Flutter InAppWebView kullanırken, kullanıcının oturum açma bilgilerini hatırlamak için Shared Preferences kullandım. Giriş ekranında güvenlik kodunu görüntüleyebilmek, formları kullanıcının verdiği bilgilerle otomatik olarak doldurmak ve site içindeki sayfa geçişlerini yapabilmek için Javascript kullandım.
 
 <div style="display:flex; flex-direction: row; justify-content: center; align-items: center">
   <img src="https://user-images.githubusercontent.com/118119029/219957843-8af2dc37-28b3-448f-9297-f3c0ef3a53f1.png" alt="" style="width: 20%;">
