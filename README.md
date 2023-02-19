@@ -15,3 +15,10 @@ Bu uygulama, kullanıcı adı ve şifreleri hatırlayan bir arayüz sağlayarak 
 Dersime yetişmek için hızlıca yürürken, dersin hangi sınıfta olduğunu öğrenmek için sistemde oturum açmam gerektiğinde yaptığım yanlış tıklamalar beni yavaşlatıyordu. Bu sorunu çözmek için, minimum yazma ve minimum tıklama gerektiren bir uygulama geliştirdim. Kullanıcı adlarını, şifreleri ve E-Devlet giriş bilgilerini hatırlayarak minimum yazmayı, sık kullanılan sayfaları içeren alt gezinim çubuğu ekleyerek de minimum tıklamayı elde ettim.
 
 Uygulamada OBS web sitesini görüntülemek için Flutter InAppWebView kullanırken, kullanıcının oturum açma bilgilerini hatırlamak için Shared Preferences kullandım.
+
+<div style="display:flex; flex-direction: row; justify-content: center; align-items: center">
+  <img src="https://user-images.githubusercontent.com/118119029/219957843-8af2dc37-28b3-448f-9297-f3c0ef3a53f1.png" alt="" style="width: 20%;">
+  <img src="https://user-images.githubusercontent.com/118119029/219957854-5240496b-b159-4287-a8c1-f22cc6aac45a.png" alt="" style="width: 20%;">
+  <img src="https://user-images.githubusercontent.com/118119029/219957857-562791ab-5be7-4ed2-a8dc-0ae176ae35f4.png" alt="" style="width: 20%;">
+  <img src="https://user-images.githubusercontent.com/118119029/219957861-9404719a-2bfa-41ef-b7fc-0d20b875bc97.png" alt="" style="width: 20%;">
+</div>
