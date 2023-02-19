@@ -10,9 +10,9 @@ To display the OBS website in my app, I utilized Flutter InAppWebView, and to re
 
 ## TR
 
-Bu uygulama, kullanıcı adı ve şifreleri hatırlayan bir arayüz sağlayarak YTÜ Öğrenci İşleri Bilgi Sistemi'ne (OBS) giriş yapmayı kolaylaştırır. Ayrıca, sistemde sık kullanılan sayfaları (Haftalık Program, Not Listesi, Duyurular vb.) içeren bir alt gezinim çubuğu bulunmaktadır, bu sayede farklı sayfalar arasında hızlı ve kolay bir şekilde geçiş yapılabilir.
+Bu uygulama, kullanıcı adı ve şifreleri hatırlayan bir arayüz sağlayarak YTÜ Öğrenci İşleri Bilgi Sistemi'ne (OBS) giriş yapmayı kolaylaştırır. Ayrıca, sistemde sık kullanılan sayfaları (Haftalık Program, Not Listesi, Duyurular vb.) içeren bir alt gezinim çubuğu (bottom navigation bar) bulunmaktadır, bu sayede farklı sayfalar arasında hızlı ve kolay bir şekilde geçiş yapılabilir.
 
-Dersime yetişmek için hızlıca yürürken, dersin hangi sınıfta olduğunu öğrenmek için sistemde oturum açmam gerektiğinde yaptığım yanlış tıklamalar beni yavaşlatıyordu. Bu sorunu çözmek için, minimum yazma ve minimum tıklama gerektiren bir uygulama geliştirdim. Kullanıcı adlarını, şifreleri ve E-Devlet giriş bilgilerini hatırlayarak minimum yazmayı, sık kullanılan sayfaları içeren alt gezinim çubuğu ekleyerek de minimum tıklamayı elde ettim.
+Dersime yetişmek için hızlıca yürürken, dersin hangi sınıfta olduğunu öğrenmek için sistemde oturum açmam gerektiğinde yaptığım yanlış tıklamalar beni yavaşlatıyordu. Bu sorunu çözmek için, minimum yazma ve minimum tıklama gerektiren bir uygulama geliştirdim. Kullanıcı adlarını, şifreleri ve E-Devlet giriş bilgilerini hatırlayarak minimum yazmayı, sık kullanılan sayfaları içeren alt gezinim çubuğu (bottom navigation bar) ekleyerek de minimum tıklamayı elde ettim.
 
 Uygulamada OBS web sitesini görüntülemek için Flutter InAppWebView kullanırken, kullanıcının oturum açma bilgilerini hatırlamak için Shared Preferences kullandım.
 
