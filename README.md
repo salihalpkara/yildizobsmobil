@@ -1,4 +1,4 @@
-# YTU OBS Mobile (YTÜ OBS Mobil)
+# Yildiz OBS Mobile (Yıldız OBS Mobil)
 
 ## EN
 
