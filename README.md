@@ -17,8 +17,8 @@ Bir yandan dersime yetişmek için hızlıca yürürken öbür yandan dersin han
 Uygulamada OBS web sitesini görüntülemek için Flutter InAppWebView kullanırken, kullanıcının oturum açma bilgilerini hatırlamak için Shared Preferences kullandım. Giriş ekranında güvenlik kodunu görüntüleyebilmek, formları kullanıcının verdiği bilgilerle otomatik olarak doldurmak ve site içindeki sayfa geçişlerini yapabilmek için Javascript kullandım.
 
 <div style="display:flex; flex-direction: row; justify-content: center; align-items: center">
-  <img src="https://user-images.githubusercontent.com/118119029/219957843-8af2dc37-28b3-448f-9297-f3c0ef3a53f1.png" alt="" style="width: 25%;">
-  <img src="https://user-images.githubusercontent.com/118119029/219957854-5240496b-b159-4287-a8c1-f22cc6aac45a.png" alt="" style="width: 25%;">
-  <img src="https://user-images.githubusercontent.com/118119029/219957857-562791ab-5be7-4ed2-a8dc-0ae176ae35f4.png" alt="" style="width: 25%;">
-  <img src="https://user-images.githubusercontent.com/118119029/219957861-9404719a-2bfa-41ef-b7fc-0d20b875bc97.png" alt="" style="width: 25%;">
+  <img src="https://user-images.githubusercontent.com/118119029/219957843-8af2dc37-28b3-448f-9297-f3c0ef3a53f1.png" alt="" style="width: 20%;">
+  <img src="https://user-images.githubusercontent.com/118119029/219957854-5240496b-b159-4287-a8c1-f22cc6aac45a.png" alt="" style="width: 20%;">
+  <img src="https://user-images.githubusercontent.com/118119029/219957857-562791ab-5be7-4ed2-a8dc-0ae176ae35f4.png" alt="" style="width: 20%;">
+  <img src="https://user-images.githubusercontent.com/118119029/219957861-9404719a-2bfa-41ef-b7fc-0d20b875bc97.png" alt="" style="width: 20%;">
 </div>
